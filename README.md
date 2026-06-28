@@ -1,4 +1,4 @@
-# LegaLens 📄⚖️
+# LegaLenz 📄⚖️
 
 > 계약서·약관 자동 리스크 분석 Agent
 
@@ -87,27 +87,34 @@ React 하이라이트 UI (색상 구분 + PDF 저장)
 ```
 legalens/
 ├── backend/
-│   ├── main.py                 # FastAPI 엔트리포인트
+│   ├── main.py
+│   ├── requirements.txt          
+│   ├── .env.example              # ✅ backend 전용 env (DB, API키)
 │   ├── api/
-│   │   └── routes.py           # API 라우터
+│   │   └── routes.py
 │   ├── core/
-│   │   ├── extractor.py        # 파일 타입 감지 + 텍스트 추출 통합
-│   │   ├── parser.py           # 조항 단위 파싱 (Unstructured)
-│   │   ├── classifier.py       # LangChain 분류 Agent (GPT-4o-mini)
-│   │   └── rag.py              # RAG 파이프라인 (Pinecone + GPT-4o)
+│   │   ├── extractor.py
+│   │   ├── parser.py
+│   │   ├── classifier.py
+│   │   └── rag.py
 │   ├── db/
-│   │   └── models.py           # PostgreSQL 모델
-│   └── data/
-│       └── standard_contracts/ # 공정거래위 표준계약서 원본
+│   │   └── models.py
+│   ├── data/
+│   │   └── standard_contracts/
+│   └── scripts/                  # ✅ 추가 — index_contracts.py 등 단발성 스크립트
+│       └── index_contracts.py
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Upload.jsx      # PDF / 이미지 업로드 UI
-│   │   │   ├── Editor.jsx      # Lexical 하이라이트 에디터
-│   │   │   └── RiskPanel.jsx   # 리스크 분석 결과 패널
+│   │   │   ├── Upload.jsx
+│   │   │   ├── Editor.jsx
+│   │   │   └── RiskPanel.jsx
 │   │   └── App.jsx
+│   ├── package.json              # ✅ npm init 하면 자동 생성
+│   └── index.html                # ✅ Vite 쓰면 필요
 ├── docker-compose.yml
-├── .env.example
+├── .env.example                  # ✅ 루트에도 Docker용으로 하나 (DB URL 등)
+├── .gitignore
 └── README.md
 ```
 
