@@ -7,7 +7,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 target_folder = os.path.join(current_dir, '..', 'data', 'standard_contracts')
 target_pattern = os.path.join(target_folder, '**', '*.txt')
 
-# 조건에 맞는 모든 txt 파일 경로 가져오기 (재귀 탐색)
+# 조건에 맞는 모든 txt 파일 경로 가져오기
 file_list = glob.glob(target_pattern, recursive=True)
 
 if not file_list:
@@ -39,7 +39,7 @@ else:
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(cleaned)
 
-        # 파일명만 깔끔하게 출력
+        # 파일명만 출력
         file_name = os.path.basename(file_path)
         print(f"✔️ 정제 완료: {file_name}")
 
