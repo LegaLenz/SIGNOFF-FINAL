@@ -1,90 +1,122 @@
 """
 조항 단위 파싱 모듈.
 
-Unstructured로 추출된 원시 텍스트를 받아
-'제1조', '① ...', '(1) ...' 같은 조항 경계를 감지하고
-구조화된 딕셔너리 리스트로 반환한다.
+전략:
+  1. "제N조" 패턴으로 분리 (한국 계약서 최우선 기준)
+  2. "N." 번호 패턴으로 분리 (제N조가 없을 때)
+  3. Unstructured partition_text 활용 (위 두 패턴 모두 실패 시)
+  4. 최후 수단: 전체를 단일 조항으로 반환
+
+결과 포맷: List[{"clause_index": int, "text": str}]
 """
 
 import re
-from typing import NamedTuple
 
 
-class Clause(NamedTuple):
-    index: int
-    title: str   # 예: "제3조"  — 없으면 빈 문자열
-    text: str
+# ── 조항 경계 패턴 ──────────────────────────────────────────────────────────
+# 제N조 / 제N조의N  (줄 시작)
+_ARTICLE_RE = re.compile(r"(?m)^(제\s*\d+\s*조(?:의\s*\d+)?)")
+
+# N.  (1~99, 줄 시작, 점 뒤 공백 필수)
+_NUMBERED_RE = re.compile(r"(?m)^(\d{1,2}\.)\s")
 
 
-# 조항 시작 패턴: 제N조, ①②③, (1)(2)(3)
-_CLAUSE_PATTERN = re.compile(
-    r"(?:^|\n)"                          # 줄 시작
-    r"(?:제\s*\d+\s*조|[①-⑳]|\(\d+\))"  # 조항 번호
-    r"[\s\S]*?(?=(?:제\s*\d+\s*조|[①-⑳]|\(\d+\))|\Z)",
-    re.MULTILINE,
-)
+# ── 내부 헬퍼 ───────────────────────────────────────────────────────────────
 
-
-def clean_text(raw: str) -> str:
-    """
-    텍스트 전처리: 불필요한 공백·헤더·페이지 번호 제거.
-
-    Args:
-        raw: PDFMiner 또는 EasyOCR에서 추출한 원시 문자열.
-
-    Returns:
-        정규화된 문자열.
-    """
-    text = re.sub(r"\f", "\n", raw)            # 폼피드 → 줄바꿈
-    text = re.sub(r"[ \t]+", " ", text)        # 연속 공백 정리
-    text = re.sub(r"\n{3,}", "\n\n", text)     # 과도한 빈 줄 제거
+def _clean(raw: str) -> str:
+    text = re.sub(r"\f", "\n", raw)         # 폼피드 → 줄바꿈
+    text = re.sub(r"[ \t]+", " ", text)     # 연속 공백 정리
+    text = re.sub(r"\n{3,}", "\n\n", text)  # 과도한 빈 줄 제거
     return text.strip()
 
 
-def detect_clause_boundaries(text: str) -> list[tuple[int, int]]:
-    """
-    조항 경계(시작·끝 인덱스) 목록을 반환한다.
+def _split_by_pattern(text: str, pattern: re.Pattern) -> list[dict]:
+    """패턴 매치 위치를 경계로 삼아 텍스트를 조항 단위로 분리한다."""
+    positions = [m.start() for m in pattern.finditer(text)]
+    if not positions:
+        return []
 
-    Args:
-        text: clean_text()를 거친 계약서 문자열.
+    clauses: list[dict] = []
 
-    Returns:
-        (start, end) 튜플 리스트. end는 다음 조항 시작 직전.
-    """
-    boundaries: list[tuple[int, int]] = []
-    for m in _CLAUSE_PATTERN.finditer(text):
-        boundaries.append((m.start(), m.end()))
-    return boundaries
+    # 첫 경계 이전 전문(前文)이 있으면 preamble로 추가
+    if positions[0] > 0:
+        preamble = text[: positions[0]].strip()
+        if preamble:
+            clauses.append({"clause_index": 0, "text": preamble})
 
-
-def parse_clauses(text: str) -> list[Clause]:
-    """
-    계약서 전문(全文)을 조항 단위 Clause 리스트로 분리한다.
-
-    Args:
-        text: 추출된 계약서 원시 텍스트 (clean_text 미적용이어도 됨).
-
-    Returns:
-        Clause(index, title, text) 리스트.
-        index는 0-based.
-
-    Example:
-        clauses = parse_clauses(raw_text)
-        for c in clauses:
-            print(c.index, c.title, c.text[:80])
-    """
-    cleaned = clean_text(text)
-    boundaries = detect_clause_boundaries(cleaned)
-
-    if not boundaries:
-        # 조항 경계를 찾지 못하면 전체를 단일 조항으로 반환
-        return [Clause(index=0, title="", text=cleaned)]
-
-    clauses: list[Clause] = []
-    for i, (start, end) in enumerate(boundaries):
-        chunk = cleaned[start:end].strip()
-        title_match = re.match(r"(제\s*\d+\s*조|[①-⑳]|\(\d+\))", chunk)
-        title = title_match.group(0) if title_match else ""
-        clauses.append(Clause(index=i, title=title, text=chunk))
+    for i, start in enumerate(positions):
+        end = positions[i + 1] if i + 1 < len(positions) else len(text)
+        chunk = text[start:end].strip()
+        if chunk:
+            clauses.append({"clause_index": len(clauses), "text": chunk})
 
     return clauses
+
+
+def _split_by_unstructured(text: str) -> list[dict]:
+    """
+    Unstructured partition_text로 엘리먼트를 얻은 뒤,
+    Title 타입 엘리먼트 중 조항 패턴과 일치하는 것을 경계로 삼아 그룹핑한다.
+    """
+    from unstructured.partition.text import partition_text
+
+    elements = partition_text(text=text)
+    clauses: list[dict] = []
+    current: list[str] = []
+
+    for el in elements:
+        el_text = str(el).strip()
+        if not el_text:
+            continue
+
+        is_boundary = type(el).__name__ == "Title" and (
+            _ARTICLE_RE.match(el_text) or _NUMBERED_RE.match(el_text)
+        )
+
+        if is_boundary and current:
+            clauses.append({"clause_index": len(clauses), "text": "\n".join(current)})
+            current = [el_text]
+        else:
+            current.append(el_text)
+
+    if current:
+        clauses.append({"clause_index": len(clauses), "text": "\n".join(current)})
+
+    return clauses
+
+
+# ── 공개 API ─────────────────────────────────────────────────────────────────
+
+def parse_clauses(text: str) -> list[dict]:
+    """
+    계약서 텍스트를 조항 단위 딕셔너리 리스트로 분리한다.
+
+    Args:
+        text: extractor.extract_text()가 반환한 원시 문자열.
+
+    Returns:
+        [{"clause_index": int, "text": str}, ...] 형태의 리스트.
+        clause_index는 0-based.
+    """
+    cleaned = _clean(text)
+
+    # 1순위: 제N조
+    result = _split_by_pattern(cleaned, _ARTICLE_RE)
+    if len(result) >= 2:
+        return result
+
+    # 2순위: 번호(N.)
+    result = _split_by_pattern(cleaned, _NUMBERED_RE)
+    if len(result) >= 2:
+        return result
+
+    # 3순위: Unstructured
+    try:
+        result = _split_by_unstructured(cleaned)
+        if result:
+            return result
+    except Exception:
+        pass
+
+    # 최후 수단: 전체를 단일 조항으로
+    return [{"clause_index": 0, "text": cleaned}]
