@@ -261,10 +261,10 @@ python scripts/index_contracts.py
 - Python 3.11 · FastAPI 개발 환경 세팅
 - PDFMiner + Unstructured 설치 및 테스트
 - 조항 파싱 로직 초안 설계
+- 공정거래위 표준계약서 30종 수집 시작
 - 표준계약서 데이터 전처리 참여
 
 **이서진**
-- 공정거래위 표준계약서 30종 수집 시작
 - Pinecone 계정 생성 및 환경 세팅
 - OpenAI Embeddings 연동 테스트
 
