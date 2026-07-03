@@ -13,13 +13,11 @@ from collect_utils import (
 
 SOURCE = "공정거래위원회"
 
-OUTPUT_PATH = os.path.join(BASE_SAVE_DIR, "..", "metadata", "source_urls.json")
-
 
 def backfill_category(category, config):
     """
     카테고리 하나를 순회하며 로컬에 이미 존재하는 파일에 한해 source_url을 매칭한다.
-    반환값: {category::file_name: {...}} 형태 딕셔너리
+    반환값: {file_name: {...}} 형태 딕셔너리 (카테고리 접두어 없음 — 저장 위치 자체가 카테고리를 구분)
     """
     bordCd = config["bordCd"]
     key = config["key"]
@@ -31,7 +29,7 @@ def backfill_category(category, config):
 
     if not os.path.isdir(save_dir):
         print(f"⚠️  {category}: 로컬 폴더가 없음 ({save_dir}) — 스킵")
-        return results
+        return results, save_dir
 
     max_page = get_max_page(bordCd, key)
     print(f"\n=== {category} 백필 시작 (총 {max_page}페이지) ===")
@@ -57,9 +55,8 @@ def backfill_category(category, config):
                 continue
 
             source_url = build_source_url(bordCd, key, ntt_sn)
-            vector_key = f"{category}::{file_name}"
 
-            results[vector_key] = {
+            results[file_name] = {
                 "title": title,
                 "category": category,
                 "contract_type": config["label"],
@@ -79,21 +76,26 @@ def backfill_category(category, config):
         for name in skipped_no_ntt_sn[:5]:
             print(f"     - {name}")
 
-    return results
+    return results, save_dir
 
 
 def main():
-    all_results = {}
+    total = 0
 
     for category, config in CATEGORIES.items():
-        all_results.update(backfill_category(category, config))
+        results, save_dir = backfill_category(category, config)
 
-    os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, ensure_ascii=False, indent=2)
+        if not results:
+            continue
 
-    print(f"\n=== 전체 백필 완료: {len(all_results)}건 저장 ===")
-    print(f"저장 위치: {os.path.abspath(OUTPUT_PATH)}")
+        output_path = os.path.join(save_dir, "_metadata.json")
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(results, f, ensure_ascii=False, indent=2)
+
+        print(f"  저장 위치: {os.path.abspath(output_path)}")
+        total += len(results)
+
+    print(f"\n=== 전체 백필 완료: {total}건 저장 (카테고리별 _metadata.json, 총 {len(CATEGORIES)}개 파일) ===")
 
 
 if __name__ == "__main__":
