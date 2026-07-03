@@ -236,8 +236,8 @@ python scripts/index_contracts.py
 
 | 이름 | 역할 |
 |------|------|
-| 임소현 | PDF 파싱 · EasyOCR 연동 · 분류 Agent · FastAPI 서버 · 표준계약서 데이터 수집 |
-| 이서진 | Pinecone 인덱싱 · RAG 파이프라인 · 대안 문구 생성 Chain · Docker 배포 |
+| 임소현 | PDF 파싱 · EasyOCR 연동 · 분류 Agent · FastAPI 서버 |
+| 이서진 | 표준계약서 데이터 수집 · Pinecone 인덱싱 · RAG 파이프라인 · 대안 문구 생성 Chain · Docker 배포 |
 
 ---
 
@@ -261,12 +261,12 @@ python scripts/index_contracts.py
 - Python 3.11 · FastAPI 개발 환경 세팅
 - PDFMiner + Unstructured 설치 및 테스트
 - 조항 파싱 로직 초안 설계
-- 공정거래위 표준계약서 30종 수집 시작
-- 표준계약서 데이터 전처리 참여
 
 **이서진**
 - Pinecone 계정 생성 및 환경 세팅
 - OpenAI Embeddings 연동 테스트
+- 공정거래위 표준계약서 30종 수집 시작
+- 표준계약서 데이터 전처리
 
 **같이**
 - GitHub 레포 생성 · 브랜치 전략 합의 · .env 구조 설계 · 발표 자료 제작 및 준비
