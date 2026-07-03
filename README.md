@@ -85,39 +85,35 @@ React 하이라이트 UI (색상 구분 + PDF 저장)
 ## 📁 프로젝트 구조
 
 ```
-SIGNOFF-FINAL/
+legalens/
 ├── backend/
-│   ├── main.py                   # FastAPI 엔트리포인트
-│   ├── requirements.txt
-│   ├── .env.example
+│   ├── main.py
+│   ├── requirements.txt          
+│   ├── .env.example              # ✅ backend 전용 env (DB, API키)
 │   ├── api/
-│   │   └── routes.py             # /health · /analyze 엔드포인트
+│   │   └── routes.py
 │   ├── core/
-│   │   ├── clause_utils.py       # 공통: 정규식 · 분리 함수 · article_number 추출
-│   │   ├── extractor.py          # 파일 타입 감지 + PDFMiner / EasyOCR 추출
-│   │   ├── parser.py             # 실시간 계약서 조항 파싱
-│   │   ├── classifier.py         # LangChain 분류 Agent (GPT-4o-mini)
-│   │   └── rag.py                # RAG 파이프라인 (Pinecone + GPT-4o)
+│   │   ├── extractor.py
+│   │   ├── parser.py
+│   │   ├── classifier.py
+│   │   └── rag.py
 │   ├── db/
-│   │   └── models.py             # PostgreSQL 분석 이력 모델
+│   │   └── models.py
 │   ├── data/
-│   │   └── standard_contracts/   # 공정거래위 표준계약서 원본 + 전처리 JSON
-│   └── scripts/
-│       ├── index_contracts.py    # 표준계약서 Pinecone 임베딩
-│       ├── preprocess_contracts.py # PDF → 조항 JSON 변환
-│       ├── test_libs.py          # PDFMiner / Unstructured 단독 테스트
-│       └── test_pipeline.py      # extractor → parser 전체 파이프라인 테스트
+│   │   └── standard_contracts/
+│   └── scripts/                  # ✅ 추가 — index_contracts.py 등 단발성 스크립트
+│       └── index_contracts.py
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Upload.jsx        # PDF / 이미지 업로드 UI
-│   │   │   ├── Editor.jsx        # Lexical 하이라이트 에디터
-│   │   │   └── RiskPanel.jsx     # 리스크 분석 결과 패널
+│   │   │   ├── Upload.jsx
+│   │   │   ├── Editor.jsx
+│   │   │   └── RiskPanel.jsx
 │   │   └── App.jsx
-│   ├── package.json
-│   └── index.html
+│   ├── package.json              # ✅ npm init 하면 자동 생성
+│   └── index.html                # ✅ Vite 쓰면 필요
 ├── docker-compose.yml
-├── .env.example
+├── .env.example                  # ✅ 루트에도 Docker용으로 하나 (DB URL 등)
 ├── .gitignore
 └── README.md
 ```
@@ -265,7 +261,8 @@ python scripts/index_contracts.py
 - Python 3.11 · FastAPI 개발 환경 세팅
 - PDFMiner + Unstructured 설치 및 테스트
 - 조항 파싱 로직 초안 설계
-- 공정거래위 표준계약서 30종 수집 시작 및 전처리 참여
+- 공정거래위 표준계약서 30종 수집 시작
+- 표준계약서 데이터 전처리 참여
 
 **이서진**
 - Pinecone 계정 생성 및 환경 세팅
@@ -276,33 +273,43 @@ python scripts/index_contracts.py
 
 ---
 
-### 1주차 (6/30 ~ 7/6) — 파싱 파이프라인 · 분류 Agent · FastAPI 완성
+### 1주차 (6/30 ~ 7/6) — 파싱 · 데이터 수집
 
 **임소현**
-- 파일 타입 감지 로직 구현 — `extractor.py` (PDF / 이미지 분기)
-- PDF 조항 단위 파싱 파이프라인 구현 — `parser.py`
-- 조항 분리 공통 모듈화 — `clause_utils.py` (정규식 · 분리 함수 · article_number 추출)
+- PDF 조항 단위 파싱 파이프라인 구현
 - EasyOCR 연동 및 이미지 텍스트 추출 테스트
-- FastAPI 서버 기본 구조 + 파일 업로드 엔드포인트 완성 — `main.py` · `routes.py`
-- LangChain 분류 Agent 구축 — `classifier.py` (GPT-4o-mini, High/Mid/Low)
-- 분류 프롬프트 설계 및 테스트
+- 파일 타입 감지 로직 구현 (PDF / 이미지 분기)
+- FastAPI 서버 기본 구조 셋업
 
 **이서진**
 - 표준계약서 30종 수집 완료 및 전처리
-- 크롤링 공통 함수 분리 — `collect_utils.py`
-- source_url 백필 스크립트 — `backfill_metadata.py`
-- contract_type 매핑 딕셔너리 — `categories.py`
-- Pinecone 인덱스 생성 + 벡터 ID 규칙 확정 (`category::filename::clause_index`)
-- 표준계약서 임베딩 → Pinecone 업로드 — `index_contracts.py`
+- Pinecone 인덱스 생성
+- 표준계약서 임베딩 → Pinecone 업로드
 
 **같이**
-- 파싱 결과 JSON 포맷 확정 (`clause_index` · `article_number` · `text`)
-- Pinecone 메타데이터 스키마 확정 (`contract_type` · `source_url` · `article_number` 등)
-- 중간 점검
+- 파싱 결과물 JSON 포맷 합의 · 중간 점검
 
 ---
 
-### 2주차 (7/7 ~ 7/13) — RAG + 대안 문구 생성
+### 2주차 (7/7 ~ 7/13) — 분류 Agent 구축
+
+**임소현**
+- LangChain 분류 Agent 구축
+- High/Mid/Low 분류 프롬프트 설계
+- GPT-4o-mini 연동 및 분류 테스트
+- FastAPI 파일 업로드 엔드포인트 완성
+
+**이서진**
+- RAG 파이프라인 기본 구조 설계
+- Pinecone 유사도 검색 구현
+- 검색 결과 품질 테스트
+
+**같이**
+- 분류 Agent ↔ RAG 연결 포인트 합의 · API 명세 작성
+
+---
+
+### 3주차 (7/14 ~ 7/20) — RAG + 대안 문구 생성
 
 **임소현**
 - 분류 Agent → RAG 파이프라인 연결
@@ -310,25 +317,23 @@ python scripts/index_contracts.py
 - React 프론트 기본 구조 셋업
 
 **이서진**
-- RAG 파이프라인 기본 구조 설계 — `rag.py`
-- Pinecone 유사도 검색 구현 및 검색 결과 품질 테스트
-- GPT-4o 대안 문구 생성 Chain 구현 (source_url 응답 포함)
-- PostgreSQL 분석 이력 저장 구현 — `db/models.py`
+- GPT-4o 대안 문구 생성 Chain 구현
+- 표준계약서 근거 포함 응답 포맷 설계
+- PostgreSQL 분석 이력 저장 구현
 
 **같이**
 - 전체 백엔드 E2E 테스트 (PDF/이미지 업로드 → 대안 문구 출력까지)
-- 분류 Agent ↔ RAG 연결 포인트 합의 · API 명세 작성
 
 ---
 
-### 3주차 (7/14 ~ 7/20) — 프론트엔드 구현
+### 4주차 (7/21 ~ 7/24) — 프론트엔드 구현
 
 **임소현**
-- Lexical 하이라이트 에디터 구현 — `Editor.jsx`
-- 리스크 색상 구분 UI (High: 빨강 / Mid: 주황 / Low: 노랑)
+- Lexical 하이라이트 에디터 구현
+- 리스크 색상 구분 UI (High/Mid/Low)
 
 **이서진**
-- 리스크 분석 결과 패널 구현 — `RiskPanel.jsx`
+- 리스크 분석 결과 패널 구현
 - PDF 다운로드 기능 추가
 
 **같이**
@@ -336,14 +341,14 @@ python scripts/index_contracts.py
 
 ---
 
-### 4주차 (7/21 ~ 7/24) — 정확도 검증
+### 5주차 (7/25 ~ 7/27) — 정확도 검증
 
 **임소현**
 - Precision / Recall / F1 측정 스크립트 작성
 - 오분류 케이스 분석
 
 **이서진**
-- 전체 테스트셋 LegaLenz 분석 실행
+- 전체 테스트셋 LegaLens 분석 실행
 - 대안 문구 적절성 평가 (3점 척도)
 
 **같이**
@@ -351,7 +356,7 @@ python scripts/index_contracts.py
 
 ---
 
-### 5주차 (7/25 ~ 7/27) — 개선 · Docker 배포
+### 6주차 (7/28 ~ 7/30) — 개선 · 발표 준비 🎤
 
 **임소현**
 - 프롬프트 개선 및 정확도 재측정
@@ -362,12 +367,4 @@ python scripts/index_contracts.py
 - 데모용 테스트 계약서 준비
 
 **같이**
-- 최종 배포 확인
-
----
-
-### 6주차 (7/28 ~ 7/30) — 발표 준비 🎤
-
-**같이**
 - 발표 자료 제작 · 발표 리허설 · 7/30 발표 🎤
-
