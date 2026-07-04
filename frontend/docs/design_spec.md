@@ -1,0 +1,125 @@
+# LegaLenz 디자인 스펙 (최종)
+
+> Figma / 프론트엔드 작업 참고용. 논의 완료된 최종 결정사항.
+
+---
+
+## 1. 컨셉
+
+**"Quiet Intelligence"** — 법률 서비스보다 AI 프로덕트에 가까운 톤 (레퍼런스: Linear, Notion)
+
+- 낮은 채도, 미니멀한 뉴트럴 베이스 + 절제된 브랜드 컬러
+- 리스크 등급(High/Mid/Low) 컬러만 상대적으로 도드라지게
+- 타이포그래피 중심 위계, 아이콘/일러스트 최소화
+- 기본 모드: 라이트모드 (다크모드는 추후 확장)
+
+---
+
+## 2. 서비스명 & 로고
+
+**확정: LegaLenz**
+
+### 워드마크 디자인
+- 자간을 좁힌 타이트 트래킹(`letter-spacing: -2.2`)의 Bold(800) 워드마크
+- "Lenz" 구간에만 제품 내 리스크 하이라이트와 동일한 배경색(`#F7C1C1`)을 얹어, 로고 자체가 제품의 핵심 시각 언어(형광펜 하이라이트)를 예고함
+- 폰트: Pretendard Variable, weight 800
+
+### 파일
+- **마스터 파일**: `legalenz_logo_final.svg` — 고정 크기 없이 `viewBox`만 지정되어 있어 어떤 크기로도 비율 왜곡 없이 확대/축소 가능
+- 사용처별 권장 크기
+  | 위치 | width | height |
+  |---|---|---|
+  | 홈 화면 (중앙) | 275px | 75px |
+  | 상단바 | 140px | 39px |
+
+> `viewBox="-4 12 220 60"` — 실제 글자 영역에 맞춰 타이트하게 크롭되어 있어 별도 여백 조정 없이 바로 사용 가능
+
+---
+
+## 3. 컬러 팔레트
+
+### 브랜드 컬러 (오프블랙 차콜 네이비)
+
+| 용도 | 컬러명 | 코드 |
+|---|---|---|
+| Primary | 차콜 네이비 | `#1C1D2E` |
+| Primary Hover | 소프트 블랙 | `#0F1019` |
+| Primary Subtle | 그레이시 네이비 틴트 | `#EEEFF3` |
+
+### 뉴트럴
+
+| 용도 | 컬러명 | 코드 |
+|---|---|---|
+| Background | 오프화이트 | `#FAFAFA` |
+| Surface | 화이트 | `#FFFFFF` |
+| Border | 라이트 그레이 | `#E4E4E7` |
+| Border Strong | 미드 그레이 | `#A1A1AA` |
+| Text Primary | 잉크 블랙 | `#18181B` |
+| Text Secondary | 미드 그레이 | `#71717A` |
+| Text Disabled | 라이트 그레이 | `#A1A1AA` |
+
+### 리스크 등급
+
+| 등급 | 강조 컬러 | 코드 | 하이라이트 배경 | 코드 |
+|---|---|---|---|---|
+| High | 레드 | `#EF4444` | 라이트 레드 | `#F7C1C1` |
+| Mid | 앰버 | `#F59E0B` | 라이트 앰버 | `#FAC775` |
+| Low | 옐로우 | `#EAB308` | 라이트 옐로우 | `#FDE68A` |
+
+---
+
+## 4. 타이포그래피
+
+**폰트: Pretendard (Variable)**
+
+```css
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
+
+font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+```
+
+> 프로덕션에서는 외부 CDN 의존을 피하기 위해 폰트 파일을 자체 서버에 호스팅하는 것을 권장
+
+| 용도 | 크기 | 웨이트 | 자간 |
+|---|---|---|---|
+| 로고 워드마크 | 46px 기준 | 800 | -2.2 |
+| Heading | 16px | 500 | 기본 |
+| 문서 조항 본문 | 14px | 400 | line-height 2 |
+| 채팅 메시지 | 13px | 400 | line-height 1.6 |
+| Caption / 라벨 | 11.5px | 400 | 기본 |
+
+---
+
+## 5. 레이아웃 구조
+
+```
+[홈 화면] → [처리 중] → [분석 화면: 좌우 2단 + 리사이즈 핸들]
+```
+
+- **분석 화면**: 좌측 문서 패널(기본 65%, min 40%) + 우측 채팅 패널(기본 35%, min 25%), 드래그로 비율 조절 가능
+- **홈 화면**: 파일 선택(드롭존, PDF/이미지 통합) + 카메라로 촬영(모바일 전용 지름길) — "사진첩에서 선택"은 파일 선택에 통합됨 (모바일 네이티브 선택창이 이미 갤러리 접근을 포함하기 때문)
+
+### 리스크 하이라이트 → 채팅 연동
+- 조항 클릭 시 캐시된 분류 결과를 즉시 채팅에 표시 (LLM 재호출 없음)
+- 이미 답변한 조항 재클릭 시 새 메시지를 쌓지 않고 기존 답변으로 스크롤 이동 + 짧은 플래시 효과
+
+---
+
+## 6. MVP 범위 제외
+
+- **OCR 오타 수정 기능**: 사용자가 변환된 텍스트를 직접 편집하는 기능은 제외 (재분류 파이프라인 부담). 추후 "전체 재분석" 버튼 방식으로 재검토 가능
+
+---
+
+## 7. 파일 목록
+
+| 파일 | 용도 |
+|---|---|
+| `legalenz_logo_final.svg` | 로고 마스터 파일 (Figma/개발 공용) |
+| `legalenz_design_tokens.json` | 컬러/타이포/사이징 토큰 (Figma Tokens Studio import 또는 Tailwind config 매핑용) |
+| `legalenz_prototype.html` | 동작하는 HTML 프로토타입 (홈 → 처리중 → 분석 화면 전체 플로우) |
+
+### Figma 적용
+1. Variables: `legalenz_design_tokens.json`을 Tokens Studio 플러그인으로 import (또는 Figma 네이티브 Variables에 수동 입력)
+2. 로고: `legalenz_logo_final.svg`를 Figma 캔버스에 직접 드래그 앤 드롭 → 컴포넌트화
+3. Dev Handoff: Variables에 Code Syntax 지정 후 Tailwind config와 매핑
