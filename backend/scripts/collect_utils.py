@@ -45,7 +45,7 @@ def get_list(bordCd, key, page):
     """
     게시판 목록 페이지를 파싱해 항목 리스트를 반환.
 
-    변경 사항 (1주차): title_link의 href(view_href)를 추가로 반환.
+    title_link의 href(view_href)를 추가로 반환.
     backfill_metadata.py가 여기서 nttSn을 뽑아 source_url을 조합하는 데 사용.
     """
     url = f"{BASE_URL}/www/selectBbsNttList.do?bordCd={bordCd}&key={key}&pageIndex={page}"
@@ -84,6 +84,6 @@ def extract_ntt_sn(view_href):
 
 def build_source_url(bordCd, key, ntt_sn):
     """
-    회의록 3️⃣에서 확정된 최소 URL 파라미터(key, bordCd, nttSn)만으로 source_url 조합.
+    최소 URL 파라미터(key, bordCd, nttSn)만으로 source_url 조합.
     """
     return f"{BASE_URL}/www/selectBbsNttView.do?key={key}&bordCd={bordCd}&nttSn={ntt_sn}"
