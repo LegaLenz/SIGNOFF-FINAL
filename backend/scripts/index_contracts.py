@@ -75,14 +75,18 @@ def embed_texts(texts):
     return embeddings, total_tokens
 
 
-def build_metadata(config, file_name, source_url, article_number):
+def build_metadata(config, file_name, source_url, article_number, clause_text):
     """
     Pinecone 메타데이터 dict 구성.
 
     Pinecone은 null 값을 허용하지 않는다. 필드를 아예 생략하는 대신 빈 문자열("")로
-    채워서 모든 벡터가 5개 필드를 항상 동일하게 갖도록 통일한다 — 다운스트림(rag.py 등)
+    채워서 모든 벡터가 6개 필드를 항상 동일하게 갖도록 통일한다 — 다운스트림(rag.py 등)
     에서 metadata.get() 없이 metadata["article_number"]처럼 바로 접근해도 KeyError가
     나지 않게 하기 위함. "" == 해당 필드 정보 없음(조항 번호 미인식 / source_url 미매칭).
+
+    text: 조항 본문 그대로. GPT-4o 대안 문구 생성 시 근거로 삼을 실제 문구가 필요해서
+    추가 (2-3주차 rag.py에서 사용). 조항 하나가 보통 수백 자 수준이라 Pinecone 메타데이터
+    한도(40KB/벡터)엔 문제없음.
     """
     return {
         "contract_type": config["label"],
@@ -90,6 +94,7 @@ def build_metadata(config, file_name, source_url, article_number):
         "source": SOURCE,
         "source_url": source_url or "",
         "article_number": article_number or "",
+        "text": clause_text,
     }
 
 
@@ -131,7 +136,7 @@ def index_category(category, config):
             safe_file_name = urllib.parse.quote(file_name, safe="")
             vector_id = f"{category}::{safe_file_name}::{clause['clause_index']}"
             metadata = build_metadata(
-                config, file_name, source_url, clause["article_number"]
+                config, file_name, source_url, clause["article_number"], clause["text"]
             )
             vectors.append((vector_id, embedding, metadata))
 
