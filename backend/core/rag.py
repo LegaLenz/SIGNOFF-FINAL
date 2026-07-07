@@ -7,7 +7,8 @@ RAG 파이프라인 (backend/core/rag.py)
 흐름:
     query_text 임베딩
         → 1단계: 사용자 계약서 카테고리 분류 (/analyze 시점 1회, classify_document_category)
-        → 2단계: Pinecone 검색 (top_k=TOP_K, category 있으면 contract_type 필터, 없으면 전체 검색)
+        → 2단계: Pinecone 검색 (top_k=TOP_K, category 있으면 contract_type 필터,
+            + article_number != "" 필터 항상 적용 — 아래 참고)
         → 신뢰도 임계값 체크 (최고 유사도 < CONFIDENCE_THRESHOLD → "근거 불충분")
         → dedup (같은 file_name 중 최고 유사도 1개만, 최대 MAX_SOURCES개)
         → GPT-4o 프롬프트 구성 (mode별로 다른 템플릿) → 응답 생성
@@ -19,6 +20,17 @@ RAG 파이프라인 (backend/core/rag.py)
     업종 특화 조항) 실측에서 전부 카테고리 필터만 썼을 때보다 결과가 나빠지는 것으로
     확인됨. build_title_embeddings.py, title_embeddings.npz는 더 이상 rag.py에서
     사용하지 않음 (스크립트 자체는 필요시 삭제해도 무방).
+
+    article_number 빈 문자열 제외 필터: agency 카테고리 sanity check에서, 제1조
+    이전 전문(계약기간/담보금/납품방법 등 서식이 응축된 청크)이 top_k 5개를 전부
+    차지해 실제 조항이 근거에서 완전히 배제되는 사례 확인. 전문은 폭넓은 키워드를
+    담고 있어 무관한 질문에도 어느 정도 유사도가 나오는 반면, 좁은 주제의 실제 조항은
+    무관한 질문엔 낮은 점수가 나오는 게 정상이라 역전 현상이 생김. Pinecone 쿼리
+    필터(article_number != "")로 이런 벡터를 아예 검색 후보에서 제외 — 재인덱싱/
+    삭제 없이 기존 Pinecone 데이터는 그대로 두고 쿼리 시점에만 배제. 부수 효과로
+    "제N조" 구조 자체가 없는 동의서/안내문류 6개 파일(전체가 단일 청크, article_number
+    없음)도 검색에서 제외되는데, 애초에 계약 조항이 아니라 RAG 목적에 안 맞는
+    참고자료라 의도된 결과로 판단.
 
 공개 API:
     classify_document_category(document_text) -> str | None   (1단계, /analyze 시점 1회 호출)
@@ -138,8 +150,11 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
         query_text: 검색 쿼리 (사용자 조항 원문 또는 자유 텍스트 질문)
         category: categories.py의 카테고리 키(예: "subcontract"). 내부적으로
             CATEGORIES[category]["label"](예: "표준하도급계약서")로 변환해서 필터링한다.
-            None이면 카테고리 제한 없음(전체 7,537개 벡터 대상).
+            None이면 카테고리 제한 없음(전체 대상, 단 article_number 필터는 항상 적용).
         top_k: 가져올 후보 개수 (dedup 이전 raw 개수)
+
+    항상 article_number가 빈 문자열이 아닌 벡터만 검색 대상으로 삼는다 (전문/서식/
+    비계약서 문서 제외 — 아래 모듈 docstring 참고).
 
     Returns:
         [{"score": float, "contract_type": str, "file_name": str, "article_number": str,
@@ -157,13 +172,24 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
         "include_metadata": True,
     }
 
+    filter_conditions = {}
     if category is not None:
         if category not in CATEGORIES:
             raise ValueError(
                 f"알 수 없는 카테고리: {category!r} (사용 가능: {list(CATEGORIES.keys())})"
             )
         contract_type_label = CATEGORIES[category]["label"]
-        query_kwargs["filter"] = {"contract_type": {"$eq": contract_type_label}}
+        filter_conditions["contract_type"] = {"$eq": contract_type_label}
+
+    # article_number가 빈 문자열인 벡터(주로 제1조 이전 전문/서식, 또는 조항 구조
+    # 자체가 없는 동의서·안내문류)를 검색 후보에서 제외. 실측 결과 이런 청크가
+    # "계약기간/담보금/납품방법" 등 폭넓은 키워드를 담고 있어 실제 조항보다 유사도가
+    # 높게 나오는 경우가 있고, top_k 자리를 차지해 진짜 근거 조항이 밀려나는 문제가
+    # 확인됨. Pinecone 쿼리 단계에서 걸러내므로 top_k는 항상 "조항 번호 있는" 결과로
+    # 채워진다 (재인덱싱/삭제 불필요, 기존 Pinecone 데이터는 그대로 둠).
+    filter_conditions["article_number"] = {"$ne": ""}
+
+    query_kwargs["filter"] = filter_conditions
 
     try:
         response = index.query(**query_kwargs)
