@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from core.classifier import classify_clauses
 from core.extractor import extract_text
 from core.parser import parse_clauses
 
@@ -35,10 +36,25 @@ async def analyze_contract(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"조항 파싱 실패: {e}")
 
+    try:
+        classified = classify_clauses(clauses)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"리스크 분류 실패: {e}")
+
     return {
         "filename": file.filename,
-        "clause_count": len(clauses),
-        "clauses": clauses,
-        # TODO (2주차): classifier.py — High/Mid/Low 분류 결과 추가
-        # TODO (3주차): rag.py      — 대안 문구 추가
+        "clause_count": len(classified),
+        "clauses": classified,
+        # TODO (2주차): rag.generate_alternatives(classified) 결과 추가
+        #   - 각 조항에 alternative 또는 warning 포함
     }
+
+
+# TODO (4주차 이후): POST /chat
+#   분석 결과를 컨텍스트로 받아 사용자 추가 질문에 답변하는 챗봇 엔드포인트.
+#   프론트 UI 완성 후 구현 예정.
+#
+#   예상 요청 포맷:
+#     {"analysis_id": str, "message": str}
+#   예상 응답 포맷:
+#     {"reply": str}
