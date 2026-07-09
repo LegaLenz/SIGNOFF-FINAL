@@ -88,7 +88,7 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
     Args:
         query_text: 검색 쿼리 (사용자 조항 원문 또는 자유 텍스트 질문)
         category: categories.py의 카테고리 키 (예: "subcontract").
-                  None이면 전체 대상 (article_number 필터는 항상 적용).
+                  None이면 전체 대상 (카테고리 필터 없음).
         top_k: 가져올 후보 개수 (dedup 이전)
 
     Returns:
@@ -97,10 +97,16 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
 
     Raises:
         RAGServiceError: Pinecone 검색 자체가 실패한 경우
+
+    Note:
+        article_number != "" 필터는 "agency" 카테고리에만 적용된다.
+        agency 계약서는 전문(前文) 청크가 많아 top_k를 독점하는 문제가 있어
+        조 번호가 있는 청크만 대상으로 삼는다. 다른 카테고리는 article_number
+        채움률이 97%+이므로 별도 필터 없이도 문제없다.
     """
     query_embedding = embed_query(query_text)
 
-    filter_conditions: dict = {"article_number": {"$ne": ""}}
+    filter_conditions: dict = {}
     if category is not None:
         try:
             from categories import CATEGORIES
@@ -108,6 +114,10 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
                 filter_conditions["contract_type"] = {"$eq": CATEGORIES[category]["label"]}
         except ImportError:
             pass
+
+    # agency는 전문 청크가 top_k를 독점하므로 조 번호 있는 청크만 검색
+    if category == "agency":
+        filter_conditions["article_number"] = {"$ne": ""}
 
     try:
         response = index.query(
