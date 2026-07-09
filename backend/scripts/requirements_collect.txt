@@ -1,0 +1,14 @@
+# 크롤링 스크립트 전용 패키지 (collect_contracts.py)
+# 서비스 실행과 무관 - 표준계약서 수집 시에만 설치 필요
+
+# [사전 설치 필요] 시스템 라이브러리 (pip으로 설치 불가)
+# Mac: brew install libmagic
+# Ubuntu: apt-get install libmagic1
+
+# pip install -r backend/scripts/requirements_collect.txt
+requests
+beautifulsoup4
+pyhwp
+python-magic
+python-docx
+pdfminer.six

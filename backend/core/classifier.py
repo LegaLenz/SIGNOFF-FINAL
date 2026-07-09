@@ -1,5 +1,9 @@
 """
+<<<<<<< HEAD
 조항 리스크 분류 + 계약서 카테고리 분류 모듈 (LangChain + GPT-4o).
+=======
+조항 리스크 분류 모듈 (LangChain + GPT-4o).
+>>>>>>> origin/dev
 """
 
 import time
@@ -10,7 +14,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
+<<<<<<< HEAD
 load_dotenv(override=True)
+=======
+load_dotenv()
+>>>>>>> origin/dev
 
 _MODEL = "gpt-4o"
 _RATE_LIMIT_DELAY = 0.5  # 레이트 리밋 방지 딜레이 (초)
@@ -38,6 +46,7 @@ class _ClassificationOutput(BaseModel):
     )
 
 
+<<<<<<< HEAD
 class _CategoryOutput(BaseModel):
     category: str = Field(
         description="계약서 종류. 예: 프리랜서 용역계약서, 표준 근로계약서, 소프트웨어 개발 계약서, 부동산 임대차계약서 등"
@@ -47,6 +56,11 @@ class _CategoryOutput(BaseModel):
 # ── 프롬프트 ─────────────────────────────────────────────────────────────────
 
 _CLAUSE_PROMPT = ChatPromptTemplate.from_messages([
+=======
+# ── 프롬프트 ─────────────────────────────────────────────────────────────────
+
+_PROMPT = ChatPromptTemplate.from_messages([
+>>>>>>> origin/dev
     ("system", """당신은 한국 계약서 리스크 분석 전문가입니다.
 계약서 조항을 읽고 아래 기준에 따라 리스크 등급을 분류하세요.
 
@@ -63,9 +77,13 @@ _CLAUSE_PROMPT = ChatPromptTemplate.from_messages([
 [Low — 표준적이고 일반적인 조항]
 · 계약 목적 및 정의 조항
 · 표준 지급 조건
+<<<<<<< HEAD
 · 일반적인 권리·의무 조항
 
 {rag_context}"""),
+=======
+· 일반적인 권리·의무 조항"""),
+>>>>>>> origin/dev
     ("human", """다음 계약서 조항을 분류해주세요.
 
 조항 번호: {article_number}
@@ -73,6 +91,7 @@ _CLAUSE_PROMPT = ChatPromptTemplate.from_messages([
 {text}"""),
 ])
 
+<<<<<<< HEAD
 _CATEGORY_PROMPT = ChatPromptTemplate.from_messages([
     ("system", """당신은 한국 계약서 분류 전문가입니다.
 계약서 전문을 읽고 계약서 종류를 한국어로 짧게 답하세요.
@@ -103,10 +122,25 @@ def _get_category_chain():
         llm = ChatOpenAI(model=_MODEL, temperature=0)
         _category_chain = _CATEGORY_PROMPT | llm.with_structured_output(_CategoryOutput)
     return _category_chain
+=======
+
+# ── Chain (모듈 최초 사용 시 1회 초기화) ─────────────────────────────────────
+
+_chain = None
+
+
+def _get_chain():
+    global _chain
+    if _chain is None:
+        llm = ChatOpenAI(model=_MODEL, temperature=0)
+        _chain = _PROMPT | llm.with_structured_output(_ClassificationOutput)
+    return _chain
+>>>>>>> origin/dev
 
 
 # ── 공개 API ─────────────────────────────────────────────────────────────────
 
+<<<<<<< HEAD
 def classify_document_category(text: str) -> str:
     """
     계약서 전문을 읽고 계약서 종류를 반환한다.
@@ -121,6 +155,8 @@ def classify_document_category(text: str) -> str:
     return result.category
 
 
+=======
+>>>>>>> origin/dev
 def classify_clause(clause: dict) -> ClassifiedClause:
     """
     단일 조항을 High / Mid / Low 로 분류한다.
@@ -132,6 +168,7 @@ def classify_clause(clause: dict) -> ClassifiedClause:
     Returns:
         ClassifiedClause — 입력 필드에 risk_level, reason, highlight 추가.
     """
+<<<<<<< HEAD
     # TODO (3주차): rag.search(clause["text"]) 로 유사 표준계약서 조항 검색 후
     #   아래 rag_context에 검색 결과 텍스트를 삽입해 프롬프트 컨텍스트로 활용.
     #   현재는 GPT-4o 자체 판단으로만 동작.
@@ -141,6 +178,11 @@ def classify_clause(clause: dict) -> ClassifiedClause:
         "article_number": clause.get("article_number") or "없음",
         "text": clause["text"],
         "rag_context": rag_context,
+=======
+    result: _ClassificationOutput = _get_chain().invoke({
+        "article_number": clause.get("article_number") or "없음",
+        "text": clause["text"],
+>>>>>>> origin/dev
     })
 
     return ClassifiedClause(

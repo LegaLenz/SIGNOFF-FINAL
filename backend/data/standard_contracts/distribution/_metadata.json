@@ -1,0 +1,37 @@
+{
+  "13_온라인쇼핑몰_표준거래계약서.txt": {
+    "title": "온라인쇼핑몰 표준거래계약서(직매입거래)(25.11월)",
+    "category": "distribution",
+    "contract_type": "표준유통거래계약서",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=205&bordCd=204&nttSn=46669"
+  },
+  "12_직매입_표준거래계약서.txt": {
+    "title": "직매입 표준거래계약서(면세점)(25.11월)",
+    "category": "distribution",
+    "contract_type": "표준유통거래계약서",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=205&bordCd=204&nttSn=46668"
+  },
+  "10_특약매입_표준거래계약서.txt": {
+    "title": "(개정) 특약매입 표준거래계약서 (백화점, 대형마트)",
+    "category": "distribution",
+    "contract_type": "표준유통거래계약서",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=205&bordCd=204&nttSn=11359"
+  },
+  "3_매장_임대차_표준거래계약서.txt": {
+    "title": "(개정) 매장 임대차 표준거래계약서 (아울렛, 복합쇼핑몰)",
+    "category": "distribution",
+    "contract_type": "표준유통거래계약서",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=205&bordCd=204&nttSn=11352"
+  },
+  "1_TV홈쇼핑_표준거래계약서.txt": {
+    "title": "(개정) TV홈쇼핑 표준거래계약서",
+    "category": "distribution",
+    "contract_type": "표준유통거래계약서",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=205&bordCd=204&nttSn=11350"
+  }
+}

@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 
-def test_pdfminer(pdf_path: str) -> None:
+def test_pdfminer(pdf_path: str) -> str:
     from pdfminer.high_level import extract_text
 
     print("=" * 60)
@@ -18,15 +18,16 @@ def test_pdfminer(pdf_path: str) -> None:
     text = extract_text(pdf_path)
     print(text[:1000])
     print(f"\n총 글자 수: {len(text)}")
+    return text
 
 
-def test_unstructured(pdf_path: str) -> None:
-    from unstructured.partition.pdf import partition_pdf
+def test_unstructured(text: str) -> None:
+    from unstructured.partition.text import partition_text
 
     print("\n" + "=" * 60)
-    print("[Unstructured] 엘리먼트 파싱")
+    print("[Unstructured] partition_text 엘리먼트 파싱")
     print("=" * 60)
-    elements = partition_pdf(pdf_path)
+    elements = partition_text(text=text)
     for el in elements[:20]:
         print(f"[{type(el).__name__}] {str(el)[:120]}")
     print(f"\n총 엘리먼트 수: {len(elements)}")
@@ -42,5 +43,5 @@ if __name__ == "__main__":
         print(f"파일을 찾을 수 없습니다: {path}")
         sys.exit(1)
 
-    test_pdfminer(path)
-    test_unstructured(path)
+    extracted_text = test_pdfminer(path)
+    test_unstructured(extracted_text)

@@ -5,6 +5,10 @@ from core.classifier import classify_clauses, classify_document_category
 from core.extractor import extract_text
 from core.parser import parse_clauses
 
+from core.classifier import classify_clauses
+from core.extractor import extract_text
+from core.parser import parse_clauses
+
 router = APIRouter()
 
 ALLOWED_CONTENT_TYPES = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
@@ -49,13 +53,17 @@ async def analyze_contract(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"조항 파싱 실패: {e}")
 
     try:
+<<<<<<< HEAD
         document_category = classify_document_category(text)
+=======
+>>>>>>> origin/dev
         classified = classify_clauses(clauses)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"리스크 분류 실패: {e}")
 
     return {
         "filename": file.filename,
+<<<<<<< HEAD
         "document_category": document_category,
         "clause_count": len(classified),
         "clauses": classified,
@@ -72,6 +80,12 @@ async def get_alternative(req: AlternativeRequest):
         "clause_index": req.clause_index,
         "alternative": None,
         "source_url": None,
+=======
+        "clause_count": len(classified),
+        "clauses": classified,
+        # TODO (2주차): rag.generate_alternatives(classified) 결과 추가
+        #   - 각 조항에 alternative 또는 warning 포함
+>>>>>>> origin/dev
     }
 
 
