@@ -21,13 +21,6 @@
     --color-risk-high-bg: #F7C1C1;
     --color-risk-high-bg-hover: #F09595;
     --color-risk-high-text: #791F1F;
-    --color-risk-mid: #F59E0B;
-    --color-risk-mid-bg: #FAC775;
-    --color-risk-mid-bg-hover: #EF9F27;
-    --color-risk-mid-text: #633806;
-    --color-risk-low: #EAB308;
-    --color-risk-low-bg: #FDE68A;
-    --color-risk-low-text: #713F12;
   }
 
   * { box-sizing: border-box; }
@@ -280,8 +273,6 @@
   }
 
   .badge.high { background: var(--color-risk-high-bg); color: var(--color-risk-high-text); }
-  .badge.mid { background: var(--color-risk-mid-bg); color: var(--color-risk-mid-text); }
-  .badge.low { background: var(--color-risk-low-bg); color: var(--color-risk-low-text); }
 
   .main {
     flex: 1;
@@ -338,8 +329,6 @@
 
   .hl.high { background: var(--color-risk-high-bg); }
   .hl.high:hover { background: var(--color-risk-high-bg-hover); }
-  .hl.mid { background: var(--color-risk-mid-bg); }
-  .hl.mid:hover { background: var(--color-risk-mid-bg-hover); }
   .hl.selected { outline: 2px solid var(--color-primary); outline-offset: 1px; }
 
   .resize-handle {
@@ -599,7 +588,6 @@
     </div>
     <div class="topbar-meta">
       <div class="badge high" id="badge-high">High 0</div>
-      <div class="badge mid" id="badge-mid">Mid 0</div>
     </div>
   </div>
 
@@ -612,7 +600,7 @@
 
       <p class="clause"><span class="article-no">제5조 (손해배상)</span><span class="hl high" data-article="제5조" data-risk="High" data-reason="손해배상 범위와 금액에 제한이 없어 을에게 무제한 책임을 지우는 조항입니다. 공정거래위원회 표준 용역계약서 제9조는 배상 한도를 계약금액 이내로 제한하고 있어, 이 조항은 표준 대비 을에게 현저히 불리합니다.">을은 계약 이행과 관련하여 발생하는 모든 손해에 대해 그 금액과 범위에 제한 없이 배상 책임을 진다.</span> 갑은 이에 대한 별도의 입증 책임을 지지 않는다.</p>
 
-      <p class="clause"><span class="article-no">제6조 (지식재산권)</span><span class="hl mid" data-article="제6조" data-risk="Mid" data-reason="본 계약 수행 과정에서 발생한 지식재산권이 전부 갑에게 귀속되어 을이 권리를 주장할 수 없는 조항입니다. 표준계약서는 통상 업무상 저작물에 한해서만 귀속을 인정하고 있어, 범위가 지나치게 넓게 설정되어 있습니다.">본 계약 수행 과정에서 발생한 모든 지식재산권은 갑에게 귀속되며, 을은 이에 대한 권리를 주장할 수 없다.</span></p>
+      <p class="clause"><span class="article-no">제6조 (지식재산권)</span>본 계약 수행 과정에서 발생한 모든 지식재산권은 갑에게 귀속되며, 을은 이에 대한 권리를 주장할 수 없다.</p>
 
       <p class="clause"><span class="article-no">제7조 (계약해지)</span><span class="hl high" data-article="제7조" data-risk="High" data-reason="갑에게만 일방적인 해지권을 부여하고 을의 이의제기 권리를 원천적으로 배제하는 조항입니다. 공정위 불공정 약관 심사 지침상 일방적 해지권 조항은 대표적인 불공정 조항 유형에 해당합니다.">갑은 사전 통보 없이 언제든지 본 계약을 해지할 수 있으며, 을은 이에 대해 이의를 제기할 수 없다.</span></p>
 
@@ -648,6 +636,15 @@
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
+
+  // 세션 상태 & 리셋 정책: 분석 화면에서 새로고침/탭 닫기 시 브라우저 기본 이탈 경고 표시
+  window.addEventListener('beforeunload', (e) => {
+    const appScreen = document.getElementById('app-screen');
+    if (appScreen.classList.contains('active')) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
 
   const dropzone = document.getElementById('dropzone');
   const filePdf = document.getElementById('file-input-pdf');
@@ -702,6 +699,8 @@
   }
 
   document.getElementById('back-btn').addEventListener('click', () => {
+    const confirmed = window.confirm('분석 화면을 벗어나면 현재 결과가 사라집니다. 계속할까요?');
+    if (!confirmed) return;
     showScreen('home-screen');
     filePdf.value = '';
     fileCamera.value = '';
@@ -737,9 +736,7 @@
 
   function updateBadges() {
     const high = document.querySelectorAll('.hl.high').length;
-    const mid = document.querySelectorAll('.hl.mid').length;
     document.getElementById('badge-high').textContent = 'High ' + high;
-    document.getElementById('badge-mid').textContent = 'Mid ' + mid;
   }
 
   const chatMessages = document.getElementById('chat-messages');
