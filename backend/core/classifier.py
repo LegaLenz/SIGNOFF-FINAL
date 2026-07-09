@@ -132,9 +132,10 @@ def classify_clause(clause: dict) -> ClassifiedClause:
     Returns:
         ClassifiedClause — 입력 필드에 risk_level, reason, highlight 추가.
     """
-    # TODO (3주차): rag.search(clause["text"]) 로 유사 표준계약서 조항 검색 후
-    #   아래 rag_context에 검색 결과 텍스트를 삽입해 프롬프트 컨텍스트로 활용.
-    #   현재는 GPT-4o 자체 판단으로만 동작.
+    # TODO (3주차): rag.search(clause["text"], category=...) 로 유사 FTC 표준계약서 조항 검색 후
+    #   검색 결과 텍스트를 rag_context에 주입해 분류 프롬프트 근거로 활용.
+    #   여기서는 검색(search)만 — 대안 문구 생성(answer_query)은 /clauses/alternative 에서 호출.
+    #   현재는 rag.py 미구현으로 GPT-4o 자체 판단으로만 동작.
     rag_context = ""
 
     result: _ClassificationOutput = _get_clause_chain().invoke({
