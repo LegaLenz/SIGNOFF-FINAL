@@ -11,10 +11,7 @@ parser.py (실시간 계약서)와 index_contracts.py (표준계약서 인덱싱
     extract_article_number() — "제N조" 추출 → str | None
     split_by_pattern()  — 정규식 경계 기반 분리
     split_by_unstructured() — Unstructured Title 기반 분리
-<<<<<<< HEAD
-=======
     split_clauses()     — 위 세 개를 조합한 폴백 캐스케이드 (제N조 → 번호 → Unstructured → 단일조항)
->>>>>>> origin/dev
 """
 
 import re
@@ -136,8 +133,6 @@ def split_by_unstructured(text: str) -> list[dict]:
         })
 
     return clauses
-<<<<<<< HEAD
-=======
 
 
 def split_clauses(text: str) -> list[dict]:
@@ -154,17 +149,14 @@ def split_clauses(text: str) -> list[dict]:
     Returns:
         [{"clause_index": int, "article_number": str | None, "text": str}, ...]
     """
-    # 1순위: 제N조
     result = split_by_pattern(text, ARTICLE_RE)
     if len(result) >= 2:
         return result
 
-    # 2순위: 번호(N.)
     result = split_by_pattern(text, NUMBERED_RE)
     if len(result) >= 2:
         return result
 
-    # 3순위: Unstructured
     try:
         result = split_by_unstructured(text)
         if result:
@@ -172,6 +164,4 @@ def split_clauses(text: str) -> list[dict]:
     except Exception:
         pass
 
-    # 최후 수단: 전체를 단일 조항으로
     return [{"clause_index": 0, "article_number": None, "text": text}]
->>>>>>> origin/dev

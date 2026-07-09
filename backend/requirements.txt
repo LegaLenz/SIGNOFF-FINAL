@@ -26,3 +26,6 @@ pinecone>=4.1.0
 sqlalchemy[asyncio]>=2.0.0
 asyncpg>=0.29.0
 alembic>=1.13.0
+
+# Testing / dev scripts
+requests>=2.32.0

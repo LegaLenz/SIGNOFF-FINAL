@@ -4,8 +4,7 @@ from pydantic import BaseModel
 from core.classifier import classify_clauses, classify_document_category
 from core.extractor import extract_text
 from core.parser import parse_clauses
-
-# TODO (3주차): from core.rag import RAGServiceError, answer_query
+from core.rag import RAGServiceError, answer_query
 
 router = APIRouter()
 
@@ -21,7 +20,9 @@ class AlternativeRequest(BaseModel):
     clause_index: int
     article_number: str | None
     text: str
-    document_category: str  # /analyze 응답에서 프론트가 보존했다가 전송
+    document_category: str   # /analyze 응답에서 프론트가 보존했다가 전송
+    risk_level: str          # "High" / "Mid" / "Low" — 프롬프트 컨텍스트용
+    reason: str              # 분류 근거 — 프롬프트 컨텍스트용
 
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────────
@@ -65,7 +66,7 @@ async def analyze_contract(file: UploadFile = File(...)):
 
     try:
         document_category = classify_document_category(text)
-        classified = classify_clauses(clauses)
+        classified = classify_clauses(clauses, category=None)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"리스크 분류 실패: {e}")
 
@@ -83,31 +84,25 @@ async def analyze_contract(file: UploadFile = File(...)):
 
 @router.post("/clauses/alternative")
 async def get_alternative(req: AlternativeRequest):
-    # TODO (3주차): rag.py 구현 후 아래 블록으로 교체
-    #
-    #   try:
-    #       result = answer_query(
-    #           query_text=req.text,
-    #           mode="alternative",
-    #           category=req.document_category,
-    #           context={
-    #               "article_number": req.article_number,
-    #           },
-    #       )
-    #       source_url = result["sources"][0]["source_url"] if result["sources"] else None
-    #       return {
-    #           "clause_index": req.clause_index,
-    #           "alternative": result["text"],
-    #           "source_url": source_url,
-    #       }
-    #   except RAGServiceError as e:
-    #       raise HTTPException(status_code=502, detail=str(e))
-
-    return {
-        "clause_index": req.clause_index,
-        "alternative": None,
-        "source_url": None,
-    }
+    try:
+        result = answer_query(
+            query_text=req.text,
+            mode="alternative",
+            category=None,  # document_category는 사람 읽기용 문자열 — categories.py 키 아님
+            context={
+                "article_number": req.article_number,
+                "risk_level": req.risk_level,
+                "reason": req.reason,
+            },
+        )
+        source_url = result["sources"][0]["source_url"] if result["sources"] else None
+        return {
+            "clause_index": req.clause_index,
+            "alternative": result["text"],
+            "source_url": source_url,
+        }
+    except RAGServiceError as e:
+        raise HTTPException(status_code=502, detail=str(e))
 
 
 # TODO (4주차 이후): POST /chat
