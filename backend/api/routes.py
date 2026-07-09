@@ -1,13 +1,30 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from pydantic import BaseModel
 
-from core.classifier import classify_clauses
+from core.classifier import classify_clauses, classify_document_category
 from core.extractor import extract_text
 from core.parser import parse_clauses
+
+# TODO (3주차): from core.rag import RAGServiceError, answer_query
 
 router = APIRouter()
 
 ALLOWED_CONTENT_TYPES = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
 
+_MAX_PDF_BYTES   = 10 * 1024 * 1024  # 10 MB
+_MAX_IMAGE_BYTES =  5 * 1024 * 1024  #  5 MB
+
+
+# ── 요청 바디 모델 ────────────────────────────────────────────────────────────
+
+class AlternativeRequest(BaseModel):
+    clause_index: int
+    article_number: str | None
+    text: str
+    document_category: str  # /analyze 응답에서 프론트가 보존했다가 전송
+
+
+# ── 엔드포인트 ────────────────────────────────────────────────────────────────
 
 @router.get("/health")
 async def health_check():
@@ -24,6 +41,16 @@ async def analyze_contract(file: UploadFile = File(...)):
 
     data = await file.read()
 
+    # 파일 크기 제한
+    is_pdf = file.content_type == "application/pdf"
+    max_bytes = _MAX_PDF_BYTES if is_pdf else _MAX_IMAGE_BYTES
+    limit_label = "10MB" if is_pdf else "5MB"
+    if len(data) > max_bytes:
+        raise HTTPException(
+            status_code=400,
+            detail=f"파일 크기 초과: {limit_label} 이하만 허용됩니다.",
+        )
+
     try:
         text = extract_text(file.filename, data, file.content_type)
     except ValueError as e:
@@ -37,16 +64,49 @@ async def analyze_contract(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"조항 파싱 실패: {e}")
 
     try:
+        document_category = classify_document_category(text)
         classified = classify_clauses(clauses)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"리스크 분류 실패: {e}")
 
+    # 예상 처리 시간: 조항 수 * 1.5초 (레이트 리밋 딜레이 0.5초 + GPT 응답 ~1초)
+    estimated_seconds = round(len(classified) * 1.5, 1)
+
     return {
         "filename": file.filename,
+        "document_category": document_category,
         "clause_count": len(classified),
+        "estimated_seconds": estimated_seconds,
         "clauses": classified,
-        # TODO (2주차): rag.generate_alternatives(classified) 결과 추가
-        #   - 각 조항에 alternative 또는 warning 포함
+    }
+
+
+@router.post("/clauses/alternative")
+async def get_alternative(req: AlternativeRequest):
+    # TODO (3주차): rag.py 구현 후 아래 블록으로 교체
+    #
+    #   try:
+    #       result = answer_query(
+    #           query_text=req.text,
+    #           mode="alternative",
+    #           category=req.document_category,
+    #           context={
+    #               "article_number": req.article_number,
+    #           },
+    #       )
+    #       source_url = result["sources"][0]["source_url"] if result["sources"] else None
+    #       return {
+    #           "clause_index": req.clause_index,
+    #           "alternative": result["text"],
+    #           "source_url": source_url,
+    #       }
+    #   except RAGServiceError as e:
+    #       raise HTTPException(status_code=502, detail=str(e))
+
+    return {
+        "clause_index": req.clause_index,
+        "alternative": None,
+        "source_url": None,
     }
 
 
