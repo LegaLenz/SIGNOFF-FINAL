@@ -34,7 +34,7 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
 | 서버 프레임워크 | FastAPI (Python 3.11+) | 무료 |
 | PDF 텍스트 추출 | PDFMiner | 무료 |
 | 이미지 텍스트 추출 | EasyOCR | 무료 |
-| 조항 분류 LLM | GPT-4o-mini | 유료 (종량제) |
+| 조항 분류 LLM | GPT-4o | 유료 (종량제) |
 | 대안 문구 생성 LLM | GPT-4o | 유료 (종량제) |
 | 에이전트 프레임워크 | LangChain | 무료 |
 | Vector DB | Pinecone | 무료 플랜 |
@@ -44,8 +44,9 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
 ### Frontend
 | 역할 | 기술 |
 |------|------|
-| UI 프레임워크 | React |
-| 스타일링 | Tailwind CSS |
+| UI 프레임워크 | React + Vite |
+| 스타일링 | Tailwind CSS v4 (`@tailwindcss/vite`) |
+| 패널 레이아웃 | react-resizable-panels |
 
 ### Infra
 | 역할 | 기술 |
@@ -71,7 +72,7 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
         ↓
 Unstructured (조항 단위 파싱)
         ↓
-LangChain 분류 Agent — GPT-4o-mini (High / 기타 분류)
+LangChain 분류 Agent — GPT-4o (High / Mid / Low 분류)
         ↓
 RAG 파이프라인 (Pinecone 검색 → GPT-4o 대안 문구 생성)
         ↓
@@ -104,12 +105,14 @@ legalens/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Upload.jsx
-│   │   │   ├── Editor.jsx
-│   │   │   └── RiskPanel.jsx
+│   │   │   ├── Upload.jsx        # 홈 화면 (드롭존)
+│   │   │   ├── Editor.jsx        # 문서 패널 (조항 렌더링 · High 하이라이트)
+│   │   │   └── ChatPanel.jsx     # 채팅 패널 (대안 문구 요청 · 스크롤)
+│   │   ├── mocks/
+│   │   │   └── clauses.json      # 프론트 개발용 mock 데이터
 │   │   └── App.jsx
-│   ├── package.json              # ✅ npm init 하면 자동 생성
-│   └── index.html                # ✅ Vite 쓰면 필요
+│   ├── package.json
+│   └── index.html
 ├── docker-compose.yml
 ├── .env.example                  # ✅ 루트에도 Docker용으로 하나 (DB URL 등)
 ├── .gitignore
@@ -196,11 +199,11 @@ python scripts/index_contracts.py
 |------|------|-----------|
 | 6/25 ~ 6/29 | 사전 준비 | 개발 환경 세팅 · GitHub 세팅 · 표준계약서 수집 시작 |
 | 6/30 ~ 7/6 | 1주차 | PDF 파싱 파이프라인 · EasyOCR 연동 · 표준계약서 Pinecone 임베딩 · LangChain 분류 Agent · GPT-4o-mini 연동 · FastAPI 엔드포인트 완성 |
-| 7/7 ~ 7/13 | 2주차 | GPT-4o 대안 문구 생성 · RAG 파이프라인 연결 · 백엔드 E2E 테스트 |
-| 7/14 ~ 7/20 | 3주차 | React 하이라이트 UI · 프론트 ↔ 백엔드 연결 |
-| 7/21 ~ 7/24 | 4주차 | 테스트셋 30~50건 제작 · Ground Truth 레이블링 · F1 정확도 측정 |
-| 7/25 ~ 7/27 | 5주차 | 프롬프트 개선 · 정확도 재측정 · Docker 배포 |
-| 7/28 ~ 7/30 | 6주차 | 발표 준비 🎤 |
+| 7/7 ~ 7/13 | 3주차 | RAG 파이프라인 연결 · 백엔드 E2E 테스트 · 프론트 기본 구조 착수 |
+| 7/14 ~ 7/20 | 4주차 | 프론트엔드 구현 완료 · 프론트 ↔ 백엔드 연결 |
+| 7/21 ~ 7/24 | 5주차 | 테스트셋 30~50건 제작 · Ground Truth 레이블링 · F1 정확도 측정 |
+| 7/25 ~ 7/27 | 6주차 | 프롬프트 개선 · 정확도 재측정 · Docker 배포 |
+| 7/28 ~ 7/30 | 7주차 | 발표 준비 🎤 |
 
 ---
 
@@ -234,8 +237,8 @@ python scripts/index_contracts.py
 
 | 이름 | 역할 |
 |------|------|
-| 임소현 | PDF 파싱 · EasyOCR 연동 · 분류 Agent · FastAPI 서버 |
-| 이서진 | 표준계약서 데이터 수집 · Pinecone 인덱싱 · RAG 파이프라인 · 대안 문구 생성 Chain · Docker 배포 |
+| 임소현 | PDF 파싱 · EasyOCR 연동 · 분류 Agent (GPT-4o) · FastAPI 서버 · RAG 연동 · 프론트 문서/채팅 패널 · 전체 조립 |
+| 이서진 | 표준계약서 데이터 수집 · Pinecone 인덱싱 · RAG 파이프라인 (rag.py) · 대안 문구 생성 · 프론트 공통 컴포넌트/홈/처리중 화면/패널 레이아웃 · Docker 배포 |
 
 ---
 
@@ -293,8 +296,8 @@ python scripts/index_contracts.py
 
 **임소현**
 - LangChain 분류 Agent 구축
-- High/기타 분류 프롬프트 설계
-- GPT-4o-mini 연동 및 분류 테스트
+- High / Mid / Low 분류 프롬프트 설계
+- GPT-4o 연동 및 분류 테스트
 - FastAPI 파일 업로드 엔드포인트 완성
 
 **이서진**
@@ -307,37 +310,41 @@ python scripts/index_contracts.py
 
 ---
 
-### 3주차 (7/14 ~ 7/20) — RAG + 대안 문구 생성
+### 3주차 (7/7 ~ 7/13) — RAG 파이프라인 연결 · 프론트 착수
 
 **임소현**
-- 분류 Agent → RAG 파이프라인 연결
-- 백엔드 통합 테스트
-- React 프론트 기본 구조 셋업
+- 분류 Agent → RAG 파이프라인 연결 (`retrieve_evidence` 연동)
+- 백엔드 E2E 테스트 스크립트 작성 (`test_e2e.py`)
 
 **이서진**
-- GPT-4o 대안 문구 생성 Chain 구현
-- 표준계약서 근거 포함 응답 포맷 설계
+- `rag.py` 구현 (search · dedup · retrieve_evidence · answer_query)
+- Vite + Tailwind CSS v4 프론트 초기 세팅
+- 공통 컴포넌트(로고, 배지, 버튼) · 홈 화면(드롭존) · 처리중 화면 구현 착수
 
 **같이**
-- 전체 백엔드 E2E 테스트 (PDF/이미지 업로드 → 대안 문구 출력까지)
+- 전체 백엔드 E2E 테스트 (PDF 업로드 → 대안 문구 출력까지)
+- 프론트-백 API 스키마 대조 및 확정
 
 ---
 
-### 4주차 (7/21 ~ 7/24) — 프론트엔드 구현
+### 4주차 (7/14 ~ 7/20) — 프론트엔드 구현 완료 · 프론트-백 연결
 
 **임소현**
-- 리스크 하이라이트 컴포넌트 구현 (읽기 전용)
-- 리스크 하이라이트 UI (High만 강조)
+- 문서 패널 (`Editor.jsx`) — 조항 목록 렌더링, `risk_level === "High"` 빨간 하이라이트
+- 채팅 패널 (`ChatPanel.jsx`) — 하이라이트 클릭 → 대안 문구 요청, 스크롤·퍼딩 처리
+- 전체 조립 (`App.jsx`) — 홈 → 처리중 → 결과 화면 전환 상태관리
 
 **이서진**
-- 리스크 분석 결과 패널 구현
+- 홈 화면(드롭존) · 처리중 화면 마무리
+- 패널 리사이즈 구현 (`react-resizable-panels`)
+- 이탈 리텐션 정책 (`beforeunload`, 뒤로가기 확인)
 
 **같이**
-- 프론트 ↔ 백엔드 API 연결 · UI 통합 테스트
+- mock 데이터 → 실제 API 교체 · 프론트-백 통합 테스트
 
 ---
 
-### 5주차 (7/25 ~ 7/27) — 정확도 검증
+### 5주차 (7/21 ~ 7/24) — 정확도 검증
 
 **임소현**
 - Precision / Recall / F1 측정 스크립트 작성
@@ -352,7 +359,7 @@ python scripts/index_contracts.py
 
 ---
 
-### 6주차 (7/28 ~ 7/30) — 개선 · 발표 준비 🎤
+### 6주차 (7/25 ~ 7/27) — 개선 · 발표 준비 🎤
 
 **임소현**
 - 프롬프트 개선 및 정확도 재측정
