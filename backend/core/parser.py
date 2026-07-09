@@ -1,90 +1,59 @@
 """
-조항 단위 파싱 모듈.
+조항 단위 파싱 모듈 (실시간 사용자 계약서용).
 
-Unstructured로 추출된 원시 텍스트를 받아
-'제1조', '① ...', '(1) ...' 같은 조항 경계를 감지하고
-구조화된 딕셔너리 리스트로 반환한다.
+텍스트 추출 → 조항 분리 → article_number 부여 순으로 처리.
+분리 로직은 clause_utils에서 공유.
+
+전략:
+  1. "제N조" 패턴 (한국 계약서 최우선)
+  2. "N." 번호 패턴
+  3. Unstructured partition_text
+  4. 최후 수단: 전체를 단일 조항으로
+
+결과 포맷:
+  [{"clause_index": int, "article_number": str | None, "text": str}, ...]
 """
 
-import re
-from typing import NamedTuple
-
-
-class Clause(NamedTuple):
-    index: int
-    title: str   # 예: "제3조"  — 없으면 빈 문자열
-    text: str
-
-
-# 조항 시작 패턴: 제N조, ①②③, (1)(2)(3)
-_CLAUSE_PATTERN = re.compile(
-    r"(?:^|\n)"                          # 줄 시작
-    r"(?:제\s*\d+\s*조|[①-⑳]|\(\d+\))"  # 조항 번호
-    r"[\s\S]*?(?=(?:제\s*\d+\s*조|[①-⑳]|\(\d+\))|\Z)",
-    re.MULTILINE,
+from core.clause_utils import (
+    ARTICLE_RE,
+    NUMBERED_RE,
+    clean_text,
+    split_by_pattern,
+    split_by_unstructured,
 )
 
 
-def clean_text(raw: str) -> str:
+def parse_clauses(text: str) -> list[dict]:
     """
-    텍스트 전처리: 불필요한 공백·헤더·페이지 번호 제거.
+    계약서 텍스트를 조항 단위 딕셔너리 리스트로 분리한다.
 
     Args:
-        raw: PDFMiner 또는 EasyOCR에서 추출한 원시 문자열.
+        text: extractor.extract_text()가 반환한 원시 문자열.
 
     Returns:
-        정규화된 문자열.
-    """
-    text = re.sub(r"\f", "\n", raw)            # 폼피드 → 줄바꿈
-    text = re.sub(r"[ \t]+", " ", text)        # 연속 공백 정리
-    text = re.sub(r"\n{3,}", "\n\n", text)     # 과도한 빈 줄 제거
-    return text.strip()
-
-
-def detect_clause_boundaries(text: str) -> list[tuple[int, int]]:
-    """
-    조항 경계(시작·끝 인덱스) 목록을 반환한다.
-
-    Args:
-        text: clean_text()를 거친 계약서 문자열.
-
-    Returns:
-        (start, end) 튜플 리스트. end는 다음 조항 시작 직전.
-    """
-    boundaries: list[tuple[int, int]] = []
-    for m in _CLAUSE_PATTERN.finditer(text):
-        boundaries.append((m.start(), m.end()))
-    return boundaries
-
-
-def parse_clauses(text: str) -> list[Clause]:
-    """
-    계약서 전문(全文)을 조항 단위 Clause 리스트로 분리한다.
-
-    Args:
-        text: 추출된 계약서 원시 텍스트 (clean_text 미적용이어도 됨).
-
-    Returns:
-        Clause(index, title, text) 리스트.
-        index는 0-based.
-
-    Example:
-        clauses = parse_clauses(raw_text)
-        for c in clauses:
-            print(c.index, c.title, c.text[:80])
+        [{"clause_index": int, "article_number": str | None, "text": str}, ...]
+        - article_number: "제5조" 형태, 인식 실패 시 None
+        - clause_index: 0-based 순번 (RAG 검색 결과의 원본 순서 복원용)
     """
     cleaned = clean_text(text)
-    boundaries = detect_clause_boundaries(cleaned)
 
-    if not boundaries:
-        # 조항 경계를 찾지 못하면 전체를 단일 조항으로 반환
-        return [Clause(index=0, title="", text=cleaned)]
+    # 1순위: 제N조
+    result = split_by_pattern(cleaned, ARTICLE_RE)
+    if len(result) >= 2:
+        return result
 
-    clauses: list[Clause] = []
-    for i, (start, end) in enumerate(boundaries):
-        chunk = cleaned[start:end].strip()
-        title_match = re.match(r"(제\s*\d+\s*조|[①-⑳]|\(\d+\))", chunk)
-        title = title_match.group(0) if title_match else ""
-        clauses.append(Clause(index=i, title=title, text=chunk))
+    # 2순위: 번호(N.)
+    result = split_by_pattern(cleaned, NUMBERED_RE)
+    if len(result) >= 2:
+        return result
 
-    return clauses
+    # 3순위: Unstructured
+    try:
+        result = split_by_unstructured(cleaned)
+        if result:
+            return result
+    except Exception:
+        pass
+
+    # 최후 수단: 전체를 단일 조항으로
+    return [{"clause_index": 0, "article_number": None, "text": cleaned}]
