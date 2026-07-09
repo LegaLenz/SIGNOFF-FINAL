@@ -10,6 +10,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
+from core.rag import RAGServiceError, retrieve_evidence
+
 load_dotenv(override=True)
 
 _MODEL = "gpt-4o"
@@ -121,22 +123,30 @@ def classify_document_category(text: str) -> str:
     return result.category
 
 
-def classify_clause(clause: dict) -> ClassifiedClause:
+def classify_clause(clause: dict, category: str | None = None) -> ClassifiedClause:
     """
     단일 조항을 High / Mid / Low 로 분류한다.
 
     Args:
         clause: parser.parse_clauses()가 반환한 단일 항목.
                 {"clause_index": int, "article_number": str | None, "text": str}
+        category: 계약서 카테고리 (categories.py 키). Pinecone 필터에 사용.
+                  None이면 카테고리 필터 없이 전체 검색.
 
     Returns:
         ClassifiedClause — 입력 필드에 risk_level, reason, highlight 추가.
     """
-    # TODO (3주차): rag.search(clause["text"], category=...) 로 유사 FTC 표준계약서 조항 검색 후
-    #   검색 결과 텍스트를 rag_context에 주입해 분류 프롬프트 근거로 활용.
-    #   여기서는 검색(search)만 — 대안 문구 생성(answer_query)은 /clauses/alternative 에서 호출.
-    #   현재는 rag.py 미구현으로 GPT-4o 자체 판단으로만 동작.
-    rag_context = ""
+    try:
+        evidence = retrieve_evidence(clause["text"], category=category)
+        if evidence:
+            lines = ["[참고: 유사 FTC 표준계약서 조항]"]
+            for e in evidence:
+                lines.append(f"- {e['contract_type']} {e['article_number']}: {e['text'][:200]}")
+            rag_context = "\n" + "\n".join(lines) + "\n"
+        else:
+            rag_context = ""
+    except RAGServiceError:
+        rag_context = ""
 
     result: _ClassificationOutput = _get_clause_chain().invoke({
         "article_number": clause.get("article_number") or "없음",
@@ -154,7 +164,7 @@ def classify_clause(clause: dict) -> ClassifiedClause:
     )
 
 
-def classify_clauses(clauses: list[dict]) -> list[ClassifiedClause]:
+def classify_clauses(clauses: list[dict], category: str | None = None) -> list[ClassifiedClause]:
     """
     조항 리스트 전체를 순차 분류한다.
 
@@ -163,13 +173,14 @@ def classify_clauses(clauses: list[dict]) -> list[ClassifiedClause]:
 
     Args:
         clauses: parser.parse_clauses()의 반환값.
+        category: 계약서 카테고리 (categories.py 키). 각 조항 검색 필터에 사용.
 
     Returns:
         ClassifiedClause 리스트.
     """
     results: list[ClassifiedClause] = []
     for i, clause in enumerate(clauses):
-        results.append(classify_clause(clause))
+        results.append(classify_clause(clause, category=category))
         if i < len(clauses) - 1:
             time.sleep(_RATE_LIMIT_DELAY)
     return results
