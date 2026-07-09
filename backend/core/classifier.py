@@ -24,9 +24,8 @@ class ClassifiedClause(TypedDict):
     clause_index: int          # 원본 순서 복원용 (RAG 검색 결과는 유사도 순)
     article_number: str | None # "제5조" 형태, 없으면 None
     text: str                  # 조항 원문
-    risk_level: RiskLevel      # High / Mid / Low
+    risk_level: RiskLevel      # High / Mid / Low (UI는 High일 때 빨간 하이라이트)
     reason: str                # 분류 근거 설명 (한국어)
-    highlight: bool            # risk_level == "High"일 때만 True (UI 빨간 하이라이트)
 
 
 # ── LLM 구조화 출력 스키마 ────────────────────────────────────────────────────
@@ -134,7 +133,7 @@ def classify_clause(clause: dict, category: str | None = None) -> ClassifiedClau
                   None이면 카테고리 필터 없이 전체 검색.
 
     Returns:
-        ClassifiedClause — 입력 필드에 risk_level, reason, highlight 추가.
+        ClassifiedClause — 입력 필드에 risk, reason 추가.
     """
     try:
         evidence = retrieve_evidence(clause["text"], category=category)
@@ -160,7 +159,6 @@ def classify_clause(clause: dict, category: str | None = None) -> ClassifiedClau
         text=clause["text"],
         risk_level=result.risk_level,
         reason=result.reason,
-        highlight=result.risk_level == "High",
     )
 
 

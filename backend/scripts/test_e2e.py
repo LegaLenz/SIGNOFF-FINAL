@@ -55,7 +55,7 @@ def test_analyze(pdf_path: Path, base_url: str) -> dict:
     print()
 
     for c in data["clauses"]:
-        marker = "[High]" if c["highlight"] else f"[{c['risk_level']}] "
+        marker = "[High]" if c["risk_level"] == "High" else f"[{c['risk_level']}] "
         article = c.get("article_number") or "전문"
         print(f"  {marker} {article}: {c['text'][:60].replace(chr(10), ' ')}...")
 
@@ -113,7 +113,7 @@ def main() -> None:
     test_health(args.base_url)
     result = test_analyze(args.pdf, args.base_url)
 
-    high_clauses = [c for c in result["clauses"] if c["highlight"]]
+    high_clauses = [c for c in result["clauses"] if c["risk_level"] == "High"]
     if not high_clauses:
         print("\n  High 리스크 조항 없음 — /clauses/alternative 테스트 생략")
         return
