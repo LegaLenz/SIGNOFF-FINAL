@@ -20,7 +20,9 @@ class AlternativeRequest(BaseModel):
     clause_index: int
     article_number: str | None
     text: str
-    document_category: str  # /analyze 응답에서 프론트가 보존했다가 전송
+    document_category: str   # /analyze 응답에서 프론트가 보존했다가 전송
+    risk_level: str          # "High" / "Mid" / "Low" — 프롬프트 컨텍스트용
+    reason: str              # 분류 근거 — 프롬프트 컨텍스트용
 
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────────
@@ -89,6 +91,8 @@ async def get_alternative(req: AlternativeRequest):
             category=None,  # document_category는 사람 읽기용 문자열 — categories.py 키 아님
             context={
                 "article_number": req.article_number,
+                "risk_level": req.risk_level,
+                "reason": req.reason,
             },
         )
         source_url = result["sources"][0]["source_url"] if result["sources"] else None

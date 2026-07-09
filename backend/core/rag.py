@@ -43,7 +43,7 @@ MAX_SOURCES = 3
 # ⚠️ 튜닝 대상 — 4주차 정확도 측정(F1) 후 조정 예정.
 # search()가 매 호출마다 실제 유사도 점수를 로그로 남기니,
 # 4주차엔 그 로그 분포를 보고 정할 것 (감으로 정하지 말 것).
-CONFIDENCE_THRESHOLD = 0.5
+CONFIDENCE_THRESHOLD = 0.72  # 4주차 F1 측정 후 재조정 예정 (0.5는 너무 낮아 무관한 결과 통과)
 
 NO_EVIDENCE_RESPONSE = {
     "text": "관련 표준계약서 근거를 찾지 못했습니다. 이 조항은 표준계약서와 직접 비교하기 어려운 특수 조항일 수 있습니다.",
@@ -276,5 +276,5 @@ def answer_query(
     """
     sources = retrieve_evidence(query_text, category=category)
     if not sources:
-        return NO_EVIDENCE_RESPONSE
+        return NO_EVIDENCE_RESPONSE.copy()
     return generate_response(query_text, sources, mode, context)

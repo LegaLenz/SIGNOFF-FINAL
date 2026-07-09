@@ -78,6 +78,8 @@ def test_alternative(clause: dict, document_category: str, base_url: str) -> Non
         "article_number": clause.get("article_number"),
         "text": clause["text"],
         "document_category": document_category,
+        "risk_level": clause["risk_level"],
+        "reason": clause["reason"],
     }
     resp = requests.post(f"{base_url}/clauses/alternative", json=payload)
     if resp.status_code != 200:
