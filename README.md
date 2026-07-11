@@ -2,7 +2,7 @@
 
 > 계약서·약관 자동 리스크 분석 Agent
 
-계약서를 PDF 또는 이미지로 업로드하면 조항 단위로 리스크 등급(High / 기타)을 분류하고,  
+계약서를 PDF 또는 이미지로 업로드하면 조항 단위로 리스크 등급(High / Mid / Low)을 분류하고,  
 공정거래위원회 표준계약서를 근거로 대안 문구까지 자동 제안하는 AI Agent 서비스입니다.
 
 ---
@@ -11,7 +11,7 @@
 
 프리랜서·스타트업이 계약서를 받았을 때 독소 조항을 직접 파악하기 어렵고,  
 변호사 검토는 건당 30~50만 원에 수일이 걸립니다.  
-LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고치는지를 한 번에 알려줍니다.
+LegaLens는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고치는지를 한 번에 알려줍니다.
 
 ---
 
@@ -20,9 +20,10 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
 - **PDF / 이미지 업로드** — PDF 또는 계약서 촬영 사진을 바로 업로드
 - **자동 텍스트 추출** — PDF는 PDFMiner, 이미지는 EasyOCR로 텍스트 추출
 - **조항 단위 자동 파싱** — 조항 경계를 감지해 분리
-- **리스크 등급 분류** — 각 조항을 High / 기타로 분류하고 이유 설명
-- **하이라이트 UI** — High(빨강) 조항만 색상으로 시각화
+- **리스크 등급 분류** — 각 조항을 High / Mid / Low로 분류하고 이유 설명
+- **하이라이트 UI** — High(빨강) / Mid(주황) / Low(노랑) 색상으로 시각화
 - **대안 문구 자동 제안** — 공정거래위 표준계약서 기반 수정 문구 생성
+- **결과 PDF 다운로드** — 분석 결과 저장 및 공유
 
 ---
 
@@ -45,6 +46,7 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
 | 역할 | 기술 |
 |------|------|
 | UI 프레임워크 | React |
+| 텍스트 에디터 | Lexical |
 | 스타일링 | Tailwind CSS |
 
 ### Infra
@@ -71,11 +73,11 @@ LegaLenz는 1분 안에 어디가 문제인지, 왜 문제인지, 어떻게 고�
         ↓
 Unstructured (조항 단위 파싱)
         ↓
-LangChain 분류 Agent — GPT-4o-mini (High / 기타 분류)
+LangChain 분류 Agent — GPT-4o-mini (High / Mid / Low 분류)
         ↓
 RAG 파이프라인 (Pinecone 검색 → GPT-4o 대안 문구 생성)
         ↓
-React 하이라이트 UI (High 조항 색상 강조)
+React 하이라이트 UI (색상 구분 + PDF 저장)
 ```
 
 ---
@@ -197,7 +199,7 @@ python scripts/index_contracts.py
 | 6/25 ~ 6/29 | 사전 준비 | 개발 환경 세팅 · GitHub 세팅 · 표준계약서 수집 시작 |
 | 6/30 ~ 7/6 | 1주차 | PDF 파싱 파이프라인 · EasyOCR 연동 · 표준계약서 Pinecone 임베딩 · LangChain 분류 Agent · GPT-4o-mini 연동 · FastAPI 엔드포인트 완성 |
 | 7/7 ~ 7/13 | 2주차 | GPT-4o 대안 문구 생성 · RAG 파이프라인 연결 · 백엔드 E2E 테스트 |
-| 7/14 ~ 7/20 | 3주차 | React 하이라이트 UI · 프론트 ↔ 백엔드 연결 |
+| 7/14 ~ 7/20 | 3주차 | React + Lexical 하이라이트 UI · 프론트 ↔ 백엔드 연결 |
 | 7/21 ~ 7/24 | 4주차 | 테스트셋 30~50건 제작 · Ground Truth 레이블링 · F1 정확도 측정 |
 | 7/25 ~ 7/27 | 5주차 | 프롬프트 개선 · 정확도 재측정 · Docker 배포 |
 | 7/28 ~ 7/30 | 6주차 | 발표 준비 🎤 |
@@ -241,7 +243,7 @@ python scripts/index_contracts.py
 
 ## 📎 기획안
 
-[LegaLenz 프로젝트 기획안 보기](./docs/LegaLens_기획안.pdf)
+[LegaLens 프로젝트 기획안 보기](./docs/LegaLens_기획안.pdf)
 
 ---
 
@@ -293,7 +295,7 @@ python scripts/index_contracts.py
 
 **임소현**
 - LangChain 분류 Agent 구축
-- High/기타 분류 프롬프트 설계
+- High/Mid/Low 분류 프롬프트 설계
 - GPT-4o-mini 연동 및 분류 테스트
 - FastAPI 파일 업로드 엔드포인트 완성
 
@@ -317,6 +319,7 @@ python scripts/index_contracts.py
 **이서진**
 - GPT-4o 대안 문구 생성 Chain 구현
 - 표준계약서 근거 포함 응답 포맷 설계
+- PostgreSQL 분석 이력 저장 구현
 
 **같이**
 - 전체 백엔드 E2E 테스트 (PDF/이미지 업로드 → 대안 문구 출력까지)
@@ -326,11 +329,12 @@ python scripts/index_contracts.py
 ### 4주차 (7/21 ~ 7/24) — 프론트엔드 구현
 
 **임소현**
-- 리스크 하이라이트 컴포넌트 구현 (읽기 전용)
-- 리스크 하이라이트 UI (High만 강조)
+- Lexical 하이라이트 에디터 구현
+- 리스크 색상 구분 UI (High/Mid/Low)
 
 **이서진**
 - 리스크 분석 결과 패널 구현
+- PDF 다운로드 기능 추가
 
 **같이**
 - 프론트 ↔ 백엔드 API 연결 · UI 통합 테스트
@@ -344,7 +348,7 @@ python scripts/index_contracts.py
 - 오분류 케이스 분석
 
 **이서진**
-- 전체 테스트셋 LegaLenz 분석 실행
+- 전체 테스트셋 LegaLens 분석 실행
 - 대안 문구 적절성 평가 (3점 척도)
 
 **같이**
@@ -364,3 +368,4 @@ python scripts/index_contracts.py
 
 **같이**
 - 발표 자료 제작 · 발표 리허설 · 7/30 발표 🎤
+
