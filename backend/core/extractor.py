@@ -53,7 +53,6 @@ def _extract_image(data: bytes) -> str:
 
     reader = _get_ocr_reader()
     image = Image.open(io.BytesIO(data)).convert("RGB")
-    # paragraph=True: 인접 텍스트 블록을 하나로 합쳐 자연스러운 줄바꿈 유지
     lines: list[str] = reader.readtext(np.array(image), detail=0, paragraph=True)
     return "\n".join(lines)
 

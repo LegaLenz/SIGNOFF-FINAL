@@ -149,17 +149,14 @@ def split_clauses(text: str) -> list[dict]:
     Returns:
         [{"clause_index": int, "article_number": str | None, "text": str}, ...]
     """
-    # 1순위: 제N조
     result = split_by_pattern(text, ARTICLE_RE)
     if len(result) >= 2:
         return result
 
-    # 2순위: 번호(N.)
     result = split_by_pattern(text, NUMBERED_RE)
     if len(result) >= 2:
         return result
 
-    # 3순위: Unstructured
     try:
         result = split_by_unstructured(text)
         if result:
@@ -167,5 +164,4 @@ def split_clauses(text: str) -> list[dict]:
     except Exception:
         pass
 
-    # 최후 수단: 전체를 단일 조항으로
     return [{"clause_index": 0, "article_number": None, "text": text}]

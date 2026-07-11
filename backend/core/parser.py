@@ -1,7 +1,7 @@
 """
 조항 단위 파싱 모듈 (실시간 사용자 계약서용).
 
-텍스트 추출 → 조항 분리 → article_number 부여 순으로 처리.
+텍스트 추출 → 조항 분리 순으로 처리.
 분리 로직(캐스케이드 포함)은 clause_utils.split_clauses()로 공유.
 
 결과 포맷:
@@ -23,5 +23,4 @@ def parse_clauses(text: str) -> list[dict]:
         - article_number: "제5조" 형태, 인식 실패 시 None
         - clause_index: 0-based 순번 (RAG 검색 결과의 원본 순서 복원용)
     """
-    cleaned = clean_text(text)
-    return split_clauses(cleaned)
+    return split_clauses(clean_text(text))
