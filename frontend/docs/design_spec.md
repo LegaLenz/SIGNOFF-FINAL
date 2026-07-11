@@ -1,4 +1,4 @@
-# LegaLenz 디자인 스펙
+# LegaLenz 디자인 스펙 (최종)
 
 > Figma / 프론트엔드 작업 참고용. 논의 완료된 최종 결정사항.
 
@@ -25,7 +25,7 @@
 - 폰트: Pretendard Variable, weight 800
 
 ### 파일
-- **마스터 파일**: `legalenz_logo_final.svg` — 고정 크기 없이 `viewBox`만 지정되어 있어 어떤 크기로도 비율 왜곡 없이 확대/축소 가능
+- **마스터 파일**: `legalenz_logo.svg` — 고정 크기 없이 `viewBox`만 지정되어 있어 어떤 크기로도 비율 왜곡 없이 확대/축소 가능
 - 사용처별 권장 크기
   | 위치 | width | height |
   |---|---|---|
@@ -66,7 +66,7 @@
 |---|---|---|---|---|
 | High | 레드 | `#EF4444` | 라이트 레드 | `#F7C1C1` |
 
-> Mid(앰버)/Low(옐로우) 등급 및 하이라이트 배경 색상은 사용 중단. `tokens.json`의 `risk-mid-*`, `risk-low-*` 토큰도 동일하게 정리 필요 (별도 확인)
+> Mid(앰버)/Low(옐로우) 등급 및 하이라이트 배경 색상은 사용 중단. `tokens.json`의 `risk-mid-*`, `risk-low-*` 토큰도 정리 완료
 
 ---
 
@@ -75,12 +75,12 @@
 **폰트: Pretendard (Variable)**
 
 ```css
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css');
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
 
 font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
 ```
 
-> 프로덕션에서는 외부 CDN 의존을 피하기 위해 폰트 파일을 자체 서버에 호스팅하는 것을 권장
+> `npm install pretendard`로 설치 후 로컬 패키지에서 import (React 프로젝트 기준). 외부 CDN 의존 없이 자체 호스팅됨
 
 | 용도 | 크기 | 웨이트 | 자간 |
 |---|---|---|---|
@@ -138,10 +138,10 @@ font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
 | 파일 | 용도 |
 |---|---|
 | `legalenz_logo.svg` | 로고 마스터 파일 (Figma/개발 공용) |
-| `design_tokens.json` | 컬러/타이포/사이징 토큰 (Figma Tokens Studio import 또는 Tailwind config 매핑용) |
+| `tokens.json` | 컬러/타이포/사이징 토큰 (Figma Tokens Studio import 또는 Tailwind config 매핑용) |
 | `prototype.html` | 동작하는 HTML 프로토타입 (홈 → 처리중 → 분석 화면 전체 플로우) |
 
 ### Figma 적용
-1. Variables: `design_tokens.json`을 Tokens Studio 플러그인으로 import (또는 Figma 네이티브 Variables에 수동 입력)
+1. Variables: `tokens.json`을 Tokens Studio 플러그인으로 import (또는 Figma 네이티브 Variables에 수동 입력)
 2. 로고: `legalenz_logo.svg`를 Figma 캔버스에 직접 드래그 앤 드롭 → 컴포넌트화
 3. Dev Handoff: Variables에 Code Syntax 지정 후 Tailwind config와 매핑

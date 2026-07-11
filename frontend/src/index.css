@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import 'pretendard/dist/web/variable/pretendardvariable.css';
+
+@theme {
+  --color-primary: #1C1D2E;
+  --color-primary-hover: #0F1019;
+  --color-primary-subtle: #EEEFF3;
+
+  --color-background: #FAFAFA;
+  --color-surface: #FFFFFF;
+  --color-border: #E4E4E7;
+  --color-border-strong: #A1A1AA;
+
+  --color-text-primary: #18181B;
+  --color-text-secondary: #71717A;
+  --color-text-disabled: #A1A1AA;
+
+  --color-risk-high: #EF4444;
+  --color-risk-high-bg: #F7C1C1;
+  --color-risk-high-bg-hover: #F09595;
+  --color-risk-high-text: #791F1F;
+
+  --font-pretendard: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-pretendard);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  height: 100vh;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
