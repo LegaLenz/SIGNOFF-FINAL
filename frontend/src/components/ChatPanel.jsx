@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import Button from './common/Button';
 
 const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+
+// ```markdown ... ``` 또는 ``` ... ``` 코드블록을 안의 텍스트로 교체
+function stripCodeBlocks(text) {
+  return text.replace(/```(?:\w+)?\s*\n?([\s\S]*?)```/g, (_, inner) => inner.trim());
+}
 
 /**
  * props:
@@ -140,7 +146,7 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
                 className="chat-fadein self-start max-w-[90%] border border-[0.5px] border-border bg-surface text-[13px] leading-relaxed text-text-primary"
                 style={{ borderRadius: '10px 10px 10px 2px', padding: '9px 13px' }}
               >
-                {msg.alternative}
+                <ReactMarkdown>{stripCodeBlocks(msg.alternative)}</ReactMarkdown>
                 {msg.sourceUrl && (
                   <a
                     href={msg.sourceUrl}
