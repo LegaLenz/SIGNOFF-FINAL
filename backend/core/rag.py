@@ -141,8 +141,16 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
         for match in response.matches
     ]
 
-    scores = [r["score"] for r in results]
-    logger.info("search(%r) top_k=%d scores=%s", query_text[:40], top_k, scores)
+    top3 = results[:3]
+    for i, r in enumerate(top3):
+        logger.info(
+            "[RAG] #%d  score=%.4f  threshold=%.2f  %s  %s",
+            i + 1,
+            r["score"],
+            CONFIDENCE_THRESHOLD,
+            r["contract_type"],
+            r["article_number"],
+        )
 
     return results
 
@@ -173,9 +181,37 @@ def retrieve_evidence(query_text: str, category: str | None = None) -> list[dict
         dedup된 근거 리스트 (최대 MAX_SOURCES개). 신뢰도 임계값 미달이면 빈 리스트.
     """
     results = search(query_text, category=category)
-    if not results or results[0]["score"] < CONFIDENCE_THRESHOLD:
+
+    # 1. search() 전체 score 목록
+    logger.info("[RAG-DEBUG] search 결과 scores: %s", [round(r["score"], 4) for r in results])
+
+    # 2. CONFIDENCE_THRESHOLD 비교값
+    top_score = results[0]["score"] if results else None
+    logger.info(
+        "[RAG-DEBUG] 임계값 비교: top_score=%s, threshold=%s, 통과=%s",
+        round(top_score, 4) if top_score is not None else None,
+        CONFIDENCE_THRESHOLD,
+        bool(results and top_score >= CONFIDENCE_THRESHOLD),
+    )
+
+    if not results or top_score < CONFIDENCE_THRESHOLD:
         return []
-    return dedup(results)
+
+    # 3. dedup() 직전
+    logger.info(
+        "[RAG-DEBUG] dedup 전: %s",
+        [{"score": round(r["score"], 4), "file_name": r["file_name"], "article_number": r["article_number"]} for r in results],
+    )
+
+    deduped = dedup(results)
+
+    # 4. dedup() 직후
+    logger.info(
+        "[RAG-DEBUG] dedup 후: %s",
+        [{"score": round(r["score"], 4), "file_name": r["file_name"], "article_number": r["article_number"]} for r in deduped],
+    )
+
+    return deduped
 
 
 # ── 응답 생성 ─────────────────────────────────────────────────────────────────
@@ -274,7 +310,15 @@ def answer_query(
     Returns:
         {"text": str, "sources": [{"contract_type", "article_number", "source_url"}, ...]}
     """
+    logger.info("[RAG-DEBUG] answer_query query_text: %r", query_text)
     sources = retrieve_evidence(query_text, category=category)
+
+    # 5. retrieve_evidence() 반환값
+    logger.info(
+        "[RAG-DEBUG] sources 수신: %s",
+        [{"score": round(s["score"], 4), "contract_type": s["contract_type"], "article_number": s["article_number"]} for s in sources],
+    )
+
     if not sources:
         return NO_EVIDENCE_RESPONSE.copy()
     return generate_response(query_text, sources, mode, context)

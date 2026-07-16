@@ -17,7 +17,7 @@ load_dotenv(override=True)
 _MODEL = "gpt-4o"
 _RATE_LIMIT_DELAY = 0.5  # 레이트 리밋 방지 딜레이 (초)
 
-RiskLevel = Literal["High", "Mid", "Low"]
+RiskLevel = Literal["High", "Other"]
 
 
 class ClassifiedClause(TypedDict):
@@ -31,8 +31,8 @@ class ClassifiedClause(TypedDict):
 # ── LLM 구조화 출력 스키마 ────────────────────────────────────────────────────
 
 class _ClassificationOutput(BaseModel):
-    risk_level: Literal["High", "Mid", "Low"] = Field(
-        description="조항 리스크 등급: High(고위험) / Mid(중위험) / Low(저위험)"
+    risk_level: Literal["High", "Other"] = Field(
+        description="조항 리스크 등급: High(을에게 일방적으로 불리한 조항) / Other(그 외 일반적인 조항)"
     )
     reason: str = Field(
         description="리스크 등급 판단 근거. 한국어로, 왜 해당 등급인지 구체적으로 서술."
@@ -57,14 +57,10 @@ _CLAUSE_PROMPT = ChatPromptTemplate.from_messages([
 · 을의 이의제기·해지권 박탈
 · 책임 면제 또는 무한 책임
 
-[Mid — 표현이 모호하거나 해석 여지가 있는 조항]
-· "합리적인 기간 내에", "갑의 판단에 따라" 등 불명확한 표현
-· 분쟁 시 해석이 엇갈릴 수 있는 조항
-
-[Low — 표준적이고 일반적인 조항]
+[Other — 그 외 일반적인 조항]
 · 계약 목적 및 정의 조항
-· 표준 지급 조건
-· 일반적인 권리·의무 조항
+· 표준 지급 조건 등 양측에 균형 잡힌 내용
+· 위 High 기준에 해당하지 않는 모든 조항
 
 {rag_context}"""),
     ("human", """다음 계약서 조항을 분류해주세요.
