@@ -109,7 +109,7 @@ def search(query_text: str, category: str | None = None, top_k: int = TOP_K) -> 
     filter_conditions: dict = {}
     if category is not None:
         try:
-            from categories import CATEGORIES
+            from scripts.categories import CATEGORIES
             if category in CATEGORIES:
                 filter_conditions["contract_type"] = {"$eq": CATEGORIES[category]["label"]}
         except ImportError:
