@@ -354,7 +354,7 @@ python scripts/index_contracts.py
 - 데모용 테스트 계약서 준비
 
 **같이**
-- 테스트 계약서 30~50건 제작 · Ground Truth 레이블링 · 수치 확인
+- 테스트 계약서 30~50건 수집 · Ground Truth 레이블링 · 수치 확인
 
 ---
 
