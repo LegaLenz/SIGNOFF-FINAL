@@ -1,5 +1,9 @@
+import logging
+
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
 
 from core.classifier import classify_clauses, classify_document_category
 from core.extractor import extract_text
@@ -84,6 +88,7 @@ async def analyze_contract(file: UploadFile = File(...)):
 
 @router.post("/clauses/alternative")
 async def get_alternative(req: AlternativeRequest):
+    logger.info("[RAG-DEBUG] answer_query query_text: %r", req.text)
     try:
         result = answer_query(
             query_text=req.text,
@@ -95,11 +100,12 @@ async def get_alternative(req: AlternativeRequest):
                 "reason": req.reason,
             },
         )
-        source_url = result["sources"][0]["source_url"] if result["sources"] else None
+        has_evidence = bool(result["sources"])
         return {
             "clause_index": req.clause_index,
-            "alternative": result["text"],
-            "source_url": source_url,
+            "alternative": result["text"] if has_evidence else None,
+            "source_url": result["sources"][0]["source_url"] if has_evidence else None,
+            "reason": req.reason,
         }
     except RAGServiceError as e:
         raise HTTPException(status_code=502, detail=str(e))
