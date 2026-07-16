@@ -88,8 +88,10 @@ React 하이라이트 UI (High 조항 색상 강조)
 legalens/
 ├── backend/
 │   ├── main.py
+│   ├── Dockerfile                 # ✅ FastAPI + uvicorn --reload (single-stage)
 │   ├── requirements.txt          
-│   ├── .env.example              # ✅ backend 전용 env (DB, API키)
+│   ├── .env                      # ✅ backend 전용 env (DB, API키) — 로컬/Docker 공용, git에는 커밋 안 함
+│   ├── .env.example
 │   ├── api/
 │   │   └── routes.py
 │   ├── core/
@@ -102,6 +104,7 @@ legalens/
 │   └── scripts/                  # ✅ 추가 — index_contracts.py 등 단발성 스크립트
 │       └── index_contracts.py
 ├── frontend/
+│   ├── Dockerfile                 # ✅ Node + Vite (single-stage, hot reload)
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Upload.jsx        # 홈 화면 (드롭존)
@@ -112,17 +115,22 @@ legalens/
 │   │   └── App.jsx
 │   ├── package.json
 │   └── index.html
-├── docker-compose.yml
-├── .env.example                  # ✅ 루트에도 Docker용으로 하나 (DB URL 등)
+├── docker-compose.yml             # ✅ backend + frontend 로컬 개발용 (배포용 아님)
 ├── .gitignore
 └── README.md
 ```
+
+> env 파일은 `backend/.env` 하나만 사용합니다. 루트에는 별도 `.env.example`을 두지 않습니다 — `docker-compose.yml`이 `backend/.env`를 `env_file`로 직접 참조합니다.
 
 ---
 
 ## ⚙️ 환경 변수 설정
 
-`.env.example`을 복사해 `.env` 파일을 생성하고 아래 값을 채워주세요.
+`backend/.env.example`을 복사해 `backend/.env` 파일을 생성하고 아래 값을 채워주세요. (Docker로 실행할 때도 동일한 `backend/.env`를 사용합니다.)
+
+```bash
+cp backend/.env.example backend/.env
+```
 
 ```env
 # OpenAI (LLM + Embeddings)
@@ -147,24 +155,25 @@ cd legalens
 ### 2. 환경 변수 설정
 
 ```bash
-cp .env.example .env
-# .env 파일에 API 키 입력
+cp backend/.env.example backend/.env
+# backend/.env 파일에 API 키 입력
 ```
 
-### 3. EasyOCR 모델 사전 다운로드
+### 3. EasyOCR 모델 다운로드 (자동)
 
 > EasyOCR은 첫 실행 시 한국어 모델 (약 500MB~1GB) 을 자동 다운로드합니다.  
-> 배포 환경에서는 Docker 빌드 시 미리 다운로드해두는 것을 권장합니다.
+> Docker 로컬 개발 환경에서는 `~/.EasyOCR` 캐시 경로를 named volume(`easyocr_models`)으로 마운트해두었기 때문에, 최초 1회만 다운로드되고 이후 컨테이너를 껐다 켜도 다시 받지 않습니다. 별도 사전 다운로드는 필요 없습니다.
 
-```bash
-python -c "import easyocr; easyocr.Reader(['ko', 'en'])"
-```
-
-### 4. Docker로 실행
+### 4. Docker로 실행 (로컬 개발용 — backend + frontend, hot reload)
 
 ```bash
 docker-compose up --build
 ```
+
+- backend: http://localhost:8000 (FastAPI, `uvicorn --reload`)
+- frontend: http://localhost:5173 (Vite dev server)
+
+> 배포 최적화(멀티스테이지 빌드 등)를 하지 않은 로컬 개발/CI 테스트용 구성입니다. 실제 배포 이미지는 이후 별도로 구성합니다.
 
 ### 5. 로컬 개발 환경 (Docker 없이)
 
