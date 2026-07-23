@@ -29,9 +29,15 @@ class AlternativeRequest(BaseModel):
     reason: str              # 분류 근거 — 프롬프트 컨텍스트용
 
 
+class ChatClause(BaseModel):
+    article_number: str | None
+    text: str
+
+
 class ChatRequest(BaseModel):
     message: str
     document_category: str   # /analyze 응답에서 프론트가 보존했다가 전송
+    clauses: list[ChatClause] = []  # 현재 화면에 렌더링된 계약서 조항 전체 — 문서 컨텍스트용
 
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────────
@@ -123,6 +129,7 @@ async def chat(req: ChatRequest):
             query_text=req.message,
             mode="chat",
             category=None,  # document_category는 사람 읽기용 문자열 — categories.py 키 아님
+            document_clauses=[c.model_dump() for c in req.clauses] or None,
         )
         has_evidence = bool(result["sources"])
         return {

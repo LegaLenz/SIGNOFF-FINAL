@@ -14,13 +14,16 @@ function stripCodeBlocks(text) {
  *   selectedClause   — Editor에서 클릭된 High 조항 객체 (null이면 빈 상태)
  *                      부모가 같은 조항을 재클릭할 때도 새 참조를 내려줘야 flash+scroll이 동작함
  *   documentCategory — /analyze 응답의 document_category (대안 문구 요청에 포함)
+ *   clauses          — /analyze 응답의 clauses 배열 (전체) — 채팅이 업로드된 계약서
+ *                      원문을 참조할 수 있도록 /chat 요청마다 함께 전송됨
  */
-export default function ChatPanel({ selectedClause = null, documentCategory = '' }) {
+export default function ChatPanel({ selectedClause = null, documentCategory = '', clauses = [] }) {
   // 조항 클릭: { kind: 'clause', id, userTag, reason, alternative, sourceUrl, isLoadingAlt }
   // 직접 입력:  { kind: 'chat', id, userText, reply, sourceUrl, isLoading, error }
   const [messages, setMessages] = useState([]);
   const [flashId, setFlashId] = useState(null);
   const [inputValue, setInputValue] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   const bottomRef = useRef(null);
   const msgRefs = useRef({});    // clause_index → reason bubble DOM element
@@ -89,9 +92,10 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
 
   const sendTyped = useCallback(async () => {
     const text = inputValue.trim();
-    if (!text) return;
+    if (!text || isSending) return;
 
     setInputValue('');
+    setIsSending(true);
     const id = `chat-${chatIdRef.current++}`;
     setMessages(prev => [
       ...prev,
@@ -102,7 +106,11 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
       const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, document_category: documentCategory }),
+        body: JSON.stringify({
+          message: text,
+          document_category: documentCategory,
+          clauses: clauses.map(c => ({ article_number: c.article_number ?? null, text: c.text })),
+        }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
@@ -117,8 +125,10 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
           m.id === id ? { ...m, reply: '답변을 가져오지 못했습니다.', isLoading: false, error: true } : m
         )
       );
+    } finally {
+      setIsSending(false);
     }
-  }, [inputValue, documentCategory]);
+  }, [inputValue, isSending, documentCategory, clauses]);
 
   // 새 메시지 추가 시에만 하단 스크롤
   useEffect(() => {
@@ -261,11 +271,13 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
           value={inputValue}
           onChange={e => setInputValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') sendTyped(); }}
-          className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 font-pretendard text-[13px] text-text-primary outline-none placeholder:text-text-disabled focus:border-border-strong"
+          disabled={isSending}
+          className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 font-pretendard text-[13px] text-text-primary outline-none placeholder:text-text-disabled focus:border-border-strong disabled:opacity-50"
         />
         <Button
           variant="send"
           onClick={sendTyped}
+          disabled={isSending}
           aria-label="전송"
         >
           <svg
