@@ -222,4 +222,7 @@ __marimo__/
 **/.DS_Store
 
 backend/data/standard_contracts/*/title_embeddings.npz
+backend/data/decisions/
+backend/data/ground_truth.json
+backend/data/misclassified.json
 node_modules/
