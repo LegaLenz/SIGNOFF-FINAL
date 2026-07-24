@@ -122,6 +122,7 @@ export default function App() {
           <ChatPanel
             selectedClause={selectedClause}
             documentCategory={documentCategory}
+            clauses={clauses}
           />
         </ResizablePanels>
       </div>

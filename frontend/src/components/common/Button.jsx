@@ -16,7 +16,7 @@ const VARIANT_CLASSES = {
 
 export default function Button({ variant = 'outline', className = '', children, ...props }) {
   return (
-    <button type="button" className={`cursor-pointer transition-colors duration-150 ${VARIANT_CLASSES[variant]} ${className}`} {...props}>
+    <button type="button" className={`cursor-pointer transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${VARIANT_CLASSES[variant]} ${className}`} {...props}>
       {children}
     </button>
   );

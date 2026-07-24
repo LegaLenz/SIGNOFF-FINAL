@@ -9,20 +9,39 @@ function stripCodeBlocks(text) {
   return text.replace(/```(?:\w+)?\s*\n?([\s\S]*?)```/g, (_, inner) => inner.trim());
 }
 
+// messages 배열에서 가장 최근에 완료된 'chat'(직접 입력) 턴 1개를 찾는다.
+// kind:'clause'(조항 클릭)는 자유 대화 흐름이 아니므로 history 대상에서 제외.
+// 로딩 중/에러 상태는 완결된 턴이 아니므로 건너뛴다.
+function getLastChatTurn(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.kind === 'chat' && !m.isLoading && !m.error) {
+      return { user: m.userText, assistant: m.reply };
+    }
+  }
+  return null;
+}
+
 /**
  * props:
  *   selectedClause   — Editor에서 클릭된 High 조항 객체 (null이면 빈 상태)
  *                      부모가 같은 조항을 재클릭할 때도 새 참조를 내려줘야 flash+scroll이 동작함
  *   documentCategory — /analyze 응답의 document_category (대안 문구 요청에 포함)
+ *   clauses          — /analyze 응답의 clauses 배열 (전체) — 채팅이 업로드된 계약서
+ *                      원문을 참조할 수 있도록 /chat 요청마다 함께 전송됨
  */
-export default function ChatPanel({ selectedClause = null, documentCategory = '' }) {
-  // { id, userTag, reason, alternative, sourceUrl, isLoadingAlt }
+export default function ChatPanel({ selectedClause = null, documentCategory = '', clauses = [] }) {
+  // 조항 클릭: { kind: 'clause', id, userTag, reason, alternative, sourceUrl, isLoadingAlt }
+  // 직접 입력:  { kind: 'chat', id, userText, reply, sourceUrl, isLoading, error }
   const [messages, setMessages] = useState([]);
   const [flashId, setFlashId] = useState(null);
+  const [inputValue, setInputValue] = useState('');
+  const [isSending, setIsSending] = useState(false);
 
   const bottomRef = useRef(null);
   const msgRefs = useRef({});    // clause_index → reason bubble DOM element
   const prevCountRef = useRef(0);
+  const chatIdRef = useRef(0);
 
   const fetchAlternative = useCallback(async (clause) => {
     try {
@@ -72,6 +91,7 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
     setMessages(prev => [
       ...prev,
       {
+        kind: 'clause',
         id: selectedClause.clause_index,
         userTag: selectedClause.article_number ?? `조항 ${selectedClause.clause_index + 1}`,
         reason: selectedClause.reason,
@@ -82,6 +102,55 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
     ]);
     fetchAlternative(selectedClause);
   }, [selectedClause]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const sendTyped = useCallback(async () => {
+    const text = inputValue.trim();
+    if (!text || isSending) return;
+
+    // setMessages로 현재 입력을 추가하기 전, 직전 완결 턴을 먼저 캡처
+    const lastTurn = getLastChatTurn(messages);
+
+    setInputValue('');
+    setIsSending(true);
+    const id = `chat-${chatIdRef.current++}`;
+    setMessages(prev => [
+      ...prev,
+      { kind: 'chat', id, userText: text, reply: null, sourceUrl: null, isLoading: true, error: false },
+    ]);
+
+    try {
+      const res = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text,
+          document_category: documentCategory,
+          clauses: clauses.map(c => ({ article_number: c.article_number ?? null, text: c.text })),
+          history: lastTurn
+            ? [
+                { role: 'user', content: lastTurn.user },
+                { role: 'assistant', content: lastTurn.assistant },
+              ]
+            : [],
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === id ? { ...m, reply: data.reply, sourceUrl: data.source_url, isLoading: false } : m
+        )
+      );
+    } catch {
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === id ? { ...m, reply: '답변을 가져오지 못했습니다.', isLoading: false, error: true } : m
+        )
+      );
+    } finally {
+      setIsSending(false);
+    }
+  }, [inputValue, isSending, documentCategory, clauses, messages]);
 
   // 새 메시지 추가 시에만 하단 스크롤
   useEffect(() => {
@@ -108,7 +177,47 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
           </p>
         )}
 
-        {messages.map(msg => (
+        {messages.map(msg => msg.kind === 'chat' ? (
+          <div key={msg.id} className="flex flex-col gap-2">
+
+            {/* 사용자 말풍선 (직접 입력) */}
+            <div
+              className="chat-fadein self-end max-w-[90%] text-[13px] leading-relaxed text-text-primary"
+              style={{ background: 'var(--color-primary-subtle)', borderRadius: '10px 10px 2px 10px', padding: '9px 13px' }}
+            >
+              {msg.userText}
+            </div>
+
+            {/* RAG 응답 말풍선 — 로딩 중 / 답변 */}
+            {msg.isLoading ? (
+              <div
+                className="chat-fadein self-start flex gap-1"
+                style={{ padding: '9px 13px' }}
+              >
+                <span className="chat-dot" />
+                <span className="chat-dot" style={{ animationDelay: '0.15s' }} />
+                <span className="chat-dot" style={{ animationDelay: '0.3s' }} />
+              </div>
+            ) : (
+              <div
+                className={`chat-fadein self-start max-w-[90%] border border-[0.5px] border-border bg-surface text-[13px] leading-relaxed ${msg.error ? 'text-text-secondary' : 'text-text-primary'}`}
+                style={{ borderRadius: '10px 10px 10px 2px', padding: '9px 13px' }}
+              >
+                <ReactMarkdown>{stripCodeBlocks(msg.reply)}</ReactMarkdown>
+                {msg.sourceUrl && (
+                  <a
+                    href={msg.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 block text-[11.5px] text-text-secondary underline hover:text-text-primary"
+                  >
+                    공정거래위원회 표준계약서 보기 →
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        ) : (
           <div key={msg.id} className="flex flex-col gap-2">
 
             {/* 사용자 말풍선 */}
@@ -176,17 +285,21 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
         <div ref={bottomRef} />
       </div>
 
-      {/* 입력 영역 — UI만 구현, 실제 호출은 TODO */}
+      {/* 입력 영역 */}
       <div className="flex shrink-0 items-center gap-2 border-t border-border px-[14px] py-3">
         <input
           type="text"
           placeholder="조항에 대해 질문하기"
-          // TODO (8번 이후): 자유 텍스트 → POST /chat 연결 (백엔드 미구현)
-          className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 font-pretendard text-[13px] text-text-primary outline-none placeholder:text-text-disabled focus:border-border-strong"
+          value={inputValue}
+          onChange={e => setInputValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') sendTyped(); }}
+          disabled={isSending}
+          className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 font-pretendard text-[13px] text-text-primary outline-none placeholder:text-text-disabled focus:border-border-strong disabled:opacity-50"
         />
         <Button
           variant="send"
-          // TODO (8번 이후): 자유 텍스트 전송 핸들러 연결
+          onClick={sendTyped}
+          disabled={isSending}
           aria-label="전송"
         >
           <svg
