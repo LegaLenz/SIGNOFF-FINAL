@@ -22,13 +22,15 @@ RAG 파이프라인 (backend/core/rag.py)
         단, 질문에 "제N조" 언급이 있으면 _filter_document_clauses()가 해당 조항만
         추려서 넣는다(토큰 절감). 언급이 없으면 전체를 그대로 넣는 안전한 fallback.
         → {"text": str, "sources": [{contract_type, article_number, source_url}, ...]}
+        mode="chat"이면 history(프론트가 매 요청마다 함께 보내는 직전 1턴, 서버 저장 없음)가
+        classify_scope/case1/case2 모두에 함께 전달돼 후속 질문의 문맥 판단에 쓰인다.
 
 공개 API:
     RAGServiceError                                                — 도메인 예외
     search(query_text, category, top_k) -> list[dict]             — Pinecone 검색
     retrieve_evidence(query_text, category) -> list[dict]         — 검색+dedup+임계값
-    classify_scope(query_text) -> bool                             — 범위 판단 (mode="chat" 근거 없음 시)
-    answer_query(query_text, mode, category, context) -> dict     — 진입점 (생성 포함)
+    classify_scope(query_text, document_clauses, history) -> bool  — 범위 판단 (mode="chat" 근거 없음 시)
+    answer_query(query_text, mode, category, context, document_clauses, history) -> dict  — 진입점 (생성 포함)
 """
 
 import json
@@ -296,7 +298,11 @@ def _build_document_context_block(document_clauses: list[dict] | None) -> str:
 
 # ── 범위 판단 & 일반 답변 (근거 없음, mode="chat") ────────────────────────────────
 
-def classify_scope(query_text: str, document_clauses: list[dict] | None = None) -> bool:
+def classify_scope(
+    query_text: str,
+    document_clauses: list[dict] | None = None,
+    history: list[dict] | None = None,
+) -> bool:
     """
     Pinecone 근거를 못 찾은 자유 질문이 이 서비스가 다루는 범위
     (표준계약서 6종 관련 계약/법률 질문, 또는 사용자가 업로드한 계약서 자체에 대한 질문)
@@ -317,7 +323,23 @@ def classify_scope(query_text: str, document_clauses: list[dict] | None = None) 
 
     분류 전용 호출이라 생성(GENERATION_MODEL)과 분리해 저렴한 모델을 쓴다.
     분류 실패 시에는 범위 밖(False)으로 처리해 근거 없는 답변을 만들지 않는다.
+
+    history: 프론트가 매 /chat 요청마다 함께 보내는 직전 1턴([{"role": "user", ...},
+    {"role": "assistant", ...}]). 서버는 이를 저장하지 않고 이번 호출에만 사용한다 —
+    "하지만 그건..." 같은 후속 반박 질문이 직전 대화 없이 고립되면 범위 밖으로
+    오분류되는 문제(예: 계약 조항의 법적 유효성을 되묻는 후속 질문)를 막기 위함.
     """
+    history_preview = [
+        {"role": h.get("role"), "content": (h.get("content") or "")[:50]}
+        for h in (history or [])
+    ]
+    logger.info(
+        "[RAG] classify_scope 진입: history 유무=%s, 턴 수=%d, 미리보기=%s",
+        bool(history),
+        len(history) if history else 0,
+        history_preview,
+    )
+
     if document_clauses:
         document_section = (
             "\n\n아래는 사용자가 현재 업로드해 화면에 띄워둔 계약서 원문입니다. "
@@ -332,6 +354,10 @@ def classify_scope(query_text: str, document_clauses: list[dict] | None = None) 
         f"이 서비스는 공정거래위원회 표준계약서 6종({SCOPE_CATEGORIES_LABEL})을 근거로 "
         "계약서 조항의 위험 여부를 분석해주는 서비스입니다."
         f"{document_section}\n\n"
+        "직전 사용자 질문과 답변이 대화 메시지로 함께 주어질 수 있습니다. 이번 질문이 "
+        "'하지만', '그럼', '그거는' 같은 표현으로 직전 대화 내용을 이어받는 후속 질문"
+        "(반박, 되묻기 등)이라면 직전 대화의 주제를 이어서 판단하세요. 직전 대화가 "
+        "계약·법률 주제였고 이번 질문이 그 흐름을 잇고 있다면 in_scope는 true입니다.\n\n"
         "판단 기준은 다음 두 가지이며, 이 순서로 확인해 하나라도 해당하면 in_scope를 true로 판단하세요:\n\n"
         "[1순위] 문서 근거 우선 원칙 (사용자가 업로드한 계약서 원문이 위에 주어진 경우)\n"
         "질문에 등장하는 핵심 개념이나 표현이 위 계약서 원문에 등장하거나 원문 조항의 내용과 "
@@ -353,24 +379,32 @@ def classify_scope(query_text: str, document_clauses: list[dict] | None = None) 
         '- "장원영 생일이 언제야?" → {"in_scope": false}\n\n'
         '반드시 JSON 객체 {"in_scope": true} 또는 {"in_scope": false} 형식으로만 응답하세요.'
     )
+    messages = [{"role": "system", "content": system_prompt}]
+    if history:
+        messages.extend(history)
+    messages.append({"role": "user", "content": query_text})
+
     try:
         response = openai_client.chat.completions.create(
             model=LIGHT_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query_text},
-            ],
+            messages=messages,
             response_format={"type": "json_object"},
             temperature=0,
         )
-        parsed = json.loads(response.choices[0].message.content)
+        raw_content = response.choices[0].message.content
+        logger.info("[RAG] classify_scope raw 응답: %s", raw_content)
+        parsed = json.loads(raw_content)
         return bool(parsed.get("in_scope", False))
     except Exception as e:
-        logger.warning("[RAG] classify_scope 실패, 범위 밖으로 처리: %s", e)
+        logger.error("[RAG] classify_scope 실패(%s), 범위 밖으로 처리: %s", type(e).__name__, e)
         return False
 
 
-def generate_general_chat_response(query_text: str, document_clauses: list[dict] | None = None) -> dict:
+def generate_general_chat_response(
+    query_text: str,
+    document_clauses: list[dict] | None = None,
+    history: list[dict] | None = None,
+) -> dict:
     """
     Pinecone 근거는 없지만 범위 안(계약/법률 일반 질문, 또는 업로드된 계약서 자체에
     대한 질문)으로 판단된 질문에 답변한다. sources는 항상 빈 리스트.
@@ -393,12 +427,14 @@ def generate_general_chat_response(query_text: str, document_clauses: list[dict]
         # 일반 답변까지 gpt-4o로 보내면 짧은 간격 연속 채팅에서 429가 잘 난다.
         # 근거 기반 답변(generate_response)만 gpt-4o를 쓰고, 여긴 TPM 여유가
         # 훨씬 큰 gpt-4o-mini로 부하를 분산한다.
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            messages.extend(history)
+        messages.append({"role": "user", "content": query_text})
+
         response = openai_client.chat.completions.create(
             model=LIGHT_MODEL,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query_text},
-            ],
+            messages=messages,
         )
     except Exception as e:
         raise RAGServiceError(f"일반 답변 생성 실패: {e}") from e
@@ -414,6 +450,7 @@ def _build_messages(
     mode: str,
     context: dict | None,
     document_clauses: list[dict] | None = None,
+    history: list[dict] | None = None,
 ) -> list[dict]:
     evidence_block = "\n\n".join(
         f"[{s['contract_type']} {s['article_number']}]\n{s['text']}"
@@ -457,10 +494,11 @@ def _build_messages(
             f"{_build_document_context_block(document_clauses)}"
         )
 
-    return [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": user_prompt},
-    ]
+    messages = [{"role": "system", "content": system_prompt}]
+    if history and mode == "chat":
+        messages.extend(history)
+    messages.append({"role": "user", "content": user_prompt})
+    return messages
 
 
 def generate_response(
@@ -469,9 +507,10 @@ def generate_response(
     mode: str,
     context: dict | None = None,
     document_clauses: list[dict] | None = None,
+    history: list[dict] | None = None,
 ) -> dict:
     """dedup된 검색 결과를 근거로 GPT-4o 응답을 생성한다."""
-    messages = _build_messages(query_text, sources, mode, context, document_clauses)
+    messages = _build_messages(query_text, sources, mode, context, document_clauses, history)
     try:
         response = openai_client.chat.completions.create(
             model=GENERATION_MODEL,
@@ -501,6 +540,7 @@ def answer_query(
     category: str | None = None,
     context: dict | None = None,
     document_clauses: list[dict] | None = None,
+    history: list[dict] | None = None,
 ) -> dict:
     """
     RAG 파이프라인 진입점.
@@ -517,6 +557,12 @@ def answer_query(
                  문서 컨텍스트로 프롬프트에 삽입되고, classify_scope 범위 판단에도 쓰인다.
                  질문에 조항 번호가 명시돼 있으면 _filter_document_clauses()가
                  해당 조항만 추려서 쓴다(토큰 절감, case1/case2 공통 적용).
+        history: mode="chat"일 때, 프론트가 매 요청마다 함께 보내는 직전 1턴
+                 ([{"role": "user", "content": str}, {"role": "assistant", "content": str}]).
+                 서버는 저장하지 않고 이번 호출에만 사용한다. classify_scope,
+                 generate_general_chat_response(case2), generate_response(case1,
+                 mode="chat"에서만)에 그대로 전달돼 후속 질문("하지만 그건...")의
+                 문맥 판단에 쓰인다.
 
     Returns:
         {"text": str, "sources": [{"contract_type", "article_number", "source_url"}, ...]}
@@ -538,10 +584,10 @@ def answer_query(
         if mode != "chat":
             return NO_EVIDENCE_RESPONSE.copy()
 
-        in_scope = classify_scope(query_text, document_clauses=document_clauses)
+        in_scope = classify_scope(query_text, document_clauses=document_clauses, history=history)
         logger.info("[RAG] 근거 없음, mode=chat → classify_scope(%r) = %s", query_text, in_scope)
         if in_scope:
-            return generate_general_chat_response(query_text, document_clauses=document_clauses)
+            return generate_general_chat_response(query_text, document_clauses=document_clauses, history=history)
         return OUT_OF_SCOPE_RESPONSE.copy()
 
-    return generate_response(query_text, sources, mode, context, document_clauses=document_clauses)
+    return generate_response(query_text, sources, mode, context, document_clauses=document_clauses, history=history)

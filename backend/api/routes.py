@@ -34,10 +34,16 @@ class ChatClause(BaseModel):
     text: str
 
 
+class ChatHistoryTurn(BaseModel):
+    role: str      # "user" | "assistant"
+    content: str
+
+
 class ChatRequest(BaseModel):
     message: str
     document_category: str   # /analyze 응답에서 프론트가 보존했다가 전송
     clauses: list[ChatClause] = []  # 현재 화면에 렌더링된 계약서 조항 전체 — 문서 컨텍스트용
+    history: list[ChatHistoryTurn] = []  # 직전 1턴(user+assistant). 서버 저장 없이 요청값만 사용
 
 
 # ── 엔드포인트 ────────────────────────────────────────────────────────────────
@@ -130,6 +136,7 @@ async def chat(req: ChatRequest):
             mode="chat",
             category=None,  # document_category는 사람 읽기용 문자열 — categories.py 키 아님
             document_clauses=[c.model_dump() for c in req.clauses] or None,
+            history=[h.model_dump() for h in req.history] or None,
         )
         has_evidence = bool(result["sources"])
         return {

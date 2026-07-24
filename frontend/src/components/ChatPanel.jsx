@@ -9,6 +9,19 @@ function stripCodeBlocks(text) {
   return text.replace(/```(?:\w+)?\s*\n?([\s\S]*?)```/g, (_, inner) => inner.trim());
 }
 
+// messages 배열에서 가장 최근에 완료된 'chat'(직접 입력) 턴 1개를 찾는다.
+// kind:'clause'(조항 클릭)는 자유 대화 흐름이 아니므로 history 대상에서 제외.
+// 로딩 중/에러 상태는 완결된 턴이 아니므로 건너뛴다.
+function getLastChatTurn(messages) {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.kind === 'chat' && !m.isLoading && !m.error) {
+      return { user: m.userText, assistant: m.reply };
+    }
+  }
+  return null;
+}
+
 /**
  * props:
  *   selectedClause   — Editor에서 클릭된 High 조항 객체 (null이면 빈 상태)
@@ -94,6 +107,9 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
     const text = inputValue.trim();
     if (!text || isSending) return;
 
+    // setMessages로 현재 입력을 추가하기 전, 직전 완결 턴을 먼저 캡처
+    const lastTurn = getLastChatTurn(messages);
+
     setInputValue('');
     setIsSending(true);
     const id = `chat-${chatIdRef.current++}`;
@@ -110,6 +126,12 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
           message: text,
           document_category: documentCategory,
           clauses: clauses.map(c => ({ article_number: c.article_number ?? null, text: c.text })),
+          history: lastTurn
+            ? [
+                { role: 'user', content: lastTurn.user },
+                { role: 'assistant', content: lastTurn.assistant },
+              ]
+            : [],
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -128,7 +150,7 @@ export default function ChatPanel({ selectedClause = null, documentCategory = ''
     } finally {
       setIsSending(false);
     }
-  }, [inputValue, isSending, documentCategory, clauses]);
+  }, [inputValue, isSending, documentCategory, clauses, messages]);
 
   // 새 메시지 추가 시에만 하단 스크롤
   useEffect(() => {
