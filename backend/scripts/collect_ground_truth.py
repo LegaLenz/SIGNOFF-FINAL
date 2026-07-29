@@ -49,6 +49,16 @@ def _is_garbled(text: str) -> bool:
     return korean / len(non_space) < 0.10
 
 
+# 약관규제법 조문 등 실제 불공정 조항이 아닌 텍스트 제외 패턴
+_EXCLUDE_PATTERNS = [
+    "제6조(일반원칙)",
+    "제7조(면책조항의 금지)",
+    "제17조(불공정약관조항의 사용금지)",
+    "시정권고를 받은 날로부터",
+    "시정조치에 따라",
+]
+
+
 # ── 양성 샘플 수집 (로컬 PDF) ────────────────────────────────────────────────
 
 def collect_high_samples(max_count: int) -> list[dict]:
@@ -92,6 +102,8 @@ def collect_high_samples(max_count: int) -> list[dict]:
                 break
             clause_text = clause["text"].strip()
             if len(clause_text) < 15:
+                continue
+            if any(pat in clause_text for pat in _EXCLUDE_PATTERNS):
                 continue
             samples.append({
                 "clause_text": clause_text,
