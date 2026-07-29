@@ -1,0 +1,33 @@
+# Render 배포용 이미지 (멀티스테이지).
+# 로컬 개발용 frontend/Dockerfile(vite dev server, 소스 볼륨 마운트 전제)과는 별도로 관리합니다.
+
+# ---- builder: 의존성 설치 + 프로덕션 정적 파일 빌드 ----
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+
+# Vite는 빌드 시점에 import.meta.env 값을 번들에 굽습니다.
+# Render 서비스 설정의 Build 단계에서 --build-arg VITE_API_URL=... 로 배포된 backend 주소를 주입하세요.
+ARG VITE_API_URL
+ENV VITE_API_URL=${VITE_API_URL}
+
+RUN npm run build
+
+# ---- runtime: nginx로 정적 파일 서빙 ----
+FROM nginx:1.27-alpine AS runtime
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Render는 컨테이너에 PORT 환경변수를 주입합니다.
+# nginx 공식 이미지는 시작 시 /etc/nginx/templates/*.template 을 envsubst로 치환하므로,
+# 위 템플릿의 ${PORT}가 여기서 자동으로 채워집니다. 기본값은 로컬 실행 대비용입니다.
+ENV PORT=8080
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]

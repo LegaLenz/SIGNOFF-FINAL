@@ -1,0 +1,29 @@
+# Server
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+
+# PDF extraction
+pdfminer.six>=20221105
+
+# Image OCR
+easyocr>=1.7.1
+pillow>=10.3.0
+
+# Clause parsing
+unstructured>=0.14.0
+
+# LLM / Agent
+langchain>=0.2.0
+langchain-openai>=0.1.8
+openai>=1.35.0
+
+# Vector DB
+pinecone>=4.1.0
+
+# Testing / dev scripts
+requests>=2.32.0
+beautifulsoup4>=4.12.0
+selenium>=4.20.0
+webdriver-manager>=4.0.0

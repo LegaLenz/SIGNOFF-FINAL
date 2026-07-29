@@ -1,0 +1,464 @@
+{
+  "97_국외여행_표준약관.txt": {
+    "title": "[제10021호]국외여행 표준약관 (2026. 1. 28. 개정)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=47080"
+  },
+  "95_국제결혼중개_표준약관.txt": {
+    "title": "[제10065호] 국제결혼중개 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=46193"
+  },
+  "84_아파트표준공급계약서.txt": {
+    "title": "[제10001호] 아파트표준공급계약서 ('23.12.6. 개정)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11194"
+  },
+  "83_산후조리원_표준약관.txt": {
+    "title": "[제10070호] 산후조리원 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11193"
+  },
+  "81_골프장이용_표준약관.txt": {
+    "title": "[제10033호] 골프장이용 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11191"
+  },
+  "80_무인세탁소_표준약관.txt": {
+    "title": "[제10081호] 무인세탁소(셀프빨래방) 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11190"
+  },
+  "78_예식장이용_표준약관.txt": {
+    "title": "[제10030호]예식장이용 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11187"
+  },
+  "77_국제이사화물_표준약관.txt": {
+    "title": "[제10080호]국제이사화물 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11186"
+  },
+  "76_택배_표준약관.txt": {
+    "title": "[제10026호] 택배 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11185"
+  },
+  "75_지류형_상품권_표준약관.txt": {
+    "title": "[제10022호] 지류형 상품권 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11183"
+  },
+  "74_대부거래_표준약관.txt": {
+    "title": "[제10036호] 대부거래 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11182"
+  },
+  "73_실내건축·창호_공사_표준계약서.txt": {
+    "title": "[제10079호] 실내건축·창호 공사 표준계약서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11181"
+  },
+  "71_전자금융거래기본약관.txt": {
+    "title": "[제10028호] 전자금융거래기본약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11179"
+  },
+  "70_철도여객운송_표준약관.txt": {
+    "title": "[제10077호] 철도여객운송 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11178"
+  },
+  "69_중계유선방송_표준약관.txt": {
+    "title": "[제10050호]중계유선방송 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11177"
+  },
+  "68_건설기계임대차표준약관.txt": {
+    "title": "[제10059호]건설기계임대차표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11176"
+  },
+  "67_휴양콘도미니엄표준약관.txt": {
+    "title": "[제10019호]휴양콘도미니엄표준약관(시설이용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11175"
+  },
+  "64_무인경비표준약관.txt": {
+    "title": "[제10053호]무인경비표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11172"
+  },
+  "62_국내여행표준약관.txt": {
+    "title": "[제10020호]국내여행표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11169"
+  },
+  "61_학원_표준약관.txt": {
+    "title": "[제10032호] 학원 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11168"
+  },
+  "60_학습지_표준약관.txt": {
+    "title": "[제10037호] 학습지 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11167"
+  },
+  "59_예식장_표준약관.txt": {
+    "title": "[제10030호] 예식장 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11166"
+  },
+  "58_국내결혼중개_표준약관.txt": {
+    "title": "[제10027호] 국내결혼중개 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11164"
+  },
+  "57_해외구매_표준약관.txt": {
+    "title": "[제10076호] 해외구매(쇼핑몰형 구매대행) 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11163"
+  },
+  "54_근저당권_설정_계약서.txt": {
+    "title": "[제10045호] 근저당권 설정 계약서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11160"
+  },
+  "53_저당권_설정_계약서.txt": {
+    "title": "[제10044호] 저당권 설정 계약서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11159"
+  },
+  "52_입출금이_자유로운_예금약관.txt": {
+    "title": "[제10013호] 입출금이 자유로운 예금약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11158"
+  },
+  "49_동의서_표준약관.txt": {
+    "title": "[제10003호] 동의서(수술, 시술, 검사, 마취, 의식하진정) 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11153"
+  },
+  "45_상조서비스_표준약관.txt": {
+    "title": "[제10056호]상조서비스 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11149"
+  },
+  "44_이사화물_표준약관.txt": {
+    "title": "[제10035호] 이사화물 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11148"
+  },
+  "43_대부보증표준약관.txt": {
+    "title": "[제10061호] 대부보증표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11147"
+  },
+  "42_입원약정서_표준약관.txt": {
+    "title": "[제10004호] 입원약정서 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11146"
+  },
+  "41_육계계열화_사육계약_표준약관.txt": {
+    "title": "[제10067호]육계계열화 사육계약 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11144"
+  },
+  "40_장기요양급여_이용_표준약관.txt": {
+    "title": "[제10068호]장기요양급여 이용 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11143"
+  },
+  "39_대중문화예술인_표준전속계약서.txt": {
+    "title": "[제10063호]대중문화예술인(연기자중심) 표준전속계약서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11142"
+  },
+  "37_어학연수_절차대행_표준약관.txt": {
+    "title": "[제10055호]어학연수 절차대행 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11140"
+  },
+  "36_전자상거래_표준약관.txt": {
+    "title": "[제10023호] 전자상거래 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11139"
+  },
+  "34_임플란트_시술_동의서_표준약관.txt": {
+    "title": "[제10071호] 임플란트 시술 동의서 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11137"
+  },
+  "32_유학절차대행_표준약관.txt": {
+    "title": "[제10034호] 유학절차대행 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11134"
+  },
+  "31_자동차대여_표준약관.txt": {
+    "title": "[제10064호]자동차대여 표준약관( 2021.10.29. 개정)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11133"
+  },
+  "30_이민대행서비스업_표준약관.txt": {
+    "title": "[제10066호]이민대행서비스업 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11132"
+  },
+  "29_자동차매매약관.txt": {
+    "title": "[제10051호] 자동차(신차)매매약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11131"
+  },
+  "28_여신거래약정서Ⅱ.txt": {
+    "title": "[제10040호]여신거래약정서Ⅱ(종합통장자동대출 및 당좌대출용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11129"
+  },
+  "27_여신거래약정서Ⅰ.txt": {
+    "title": "[제10007호]여신거래약정서Ⅰ(기업용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11128"
+  },
+  "26_대출거래약정서Ⅱ.txt": {
+    "title": "[제10041호]대출거래약정서Ⅱ(종합통장자동대출 및 가계당좌대출용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11127"
+  },
+  "25_대출거래약정서Ⅰ.txt": {
+    "title": "[제10008호]대출거래약정서Ⅰ(가계용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11126"
+  },
+  "24_택배표준약관.txt": {
+    "title": "[제10026호]택배표준약관(개정)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11125"
+  },
+  "23_이륜차배송_표준약관.txt": {
+    "title": "[제10058호]이륜차배송(퀵서비스) 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11124"
+  },
+  "22_전자보험거래_표준약관.txt": {
+    "title": "[제10054호]전자보험거래 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11123"
+  },
+  "21_정수기임대차_표준약관.txt": {
+    "title": "[제10052호]정수기임대차(렌탈) 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11122"
+  },
+  "20_종합유선방송_표준약관.txt": {
+    "title": "[제10049호]종합유선방송 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11121"
+  },
+  "19_체력단련장이용_표준약관.txt": {
+    "title": "[제10048호]체력단련장(헬스장)이용 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11120"
+  },
+  "18_근보증서.txt": {
+    "title": "[제10047호]근보증서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11119"
+  },
+  "17_보증서.txt": {
+    "title": "[제10046호]보증서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11118"
+  },
+  "16_지급보증거래약정서.txt": {
+    "title": "[제10043호]지급보증거래약정서(가계용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11117"
+  },
+  "14_세탁업_표준약관.txt": {
+    "title": "[제10039호]세탁업 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11115"
+  },
+  "13_자동판매기매매_표준약관.txt": {
+    "title": "[제10038호]자동판매기매매 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11114"
+  },
+  "11_장례식장_표준약관.txt": {
+    "title": "[제10029호]장례식장 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11111"
+  },
+  "10_영화관람_표준약관.txt": {
+    "title": "[제10025호]영화관람 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11110"
+  },
+  "8_여행업_표준약관.txt": {
+    "title": "[제10020~21호]여행업 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11107"
+  },
+  "7_주차장_관리규정_표준약관.txt": {
+    "title": "[제10016호]주차장 관리규정 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11106"
+  },
+  "6_거치식_예금약관.txt": {
+    "title": "[제10015호]거치식 예금약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11105"
+  },
+  "5_적립식_예금약관.txt": {
+    "title": "[제10014호]적립식 예금약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11104"
+  },
+  "3_상가분양계약서_표준약관.txt": {
+    "title": "[제10010호]상가(공동주택복리시설)분양계약서 표준약관",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11100"
+  },
+  "2_추가약정서.txt": {
+    "title": "[제10009호]추가약정서(한도증액용)",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11099"
+  },
+  "1_임대주택_표준임대차계약서.txt": {
+    "title": "[제10002호]임대주택 표준임대차계약서",
+    "category": "standard_terms",
+    "contract_type": "표준약관",
+    "source": "공정거래위원회",
+    "source_url": "https://www.ftc.go.kr/www/selectBbsNttView.do?key=202&bordCd=201&nttSn=11098"
+  }
+}

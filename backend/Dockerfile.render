@@ -1,0 +1,40 @@
+# Render 배포용 이미지 (멀티스테이지).
+# 로컬 개발용 backend/Dockerfile(--reload, 소스 볼륨 마운트 전제)과는 별도로 관리합니다.
+
+# ---- builder: 의존성을 venv에 설치 ----
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+
+# easyocr가 끌어오는 torch/torchvision을 기본(PyPI) 인덱스로 설치하면 Render처럼 GPU가 없는 환경에도
+# CUDA용 nvidia-cu* 패키지(수 GB)가 함께 딸려온다. Render는 CPU 추론만 하므로 CPU 전용 wheel을 먼저
+# 설치해 이후 requirements.txt 설치 시 easyocr가 이미 만족된 버전을 그대로 재사용하게 한다.
+RUN pip install --no-cache-dir torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r requirements.txt
+
+# ---- runtime: venv + 앱 코드만 포함한 경량 이미지 ----
+FROM python:3.11-slim AS runtime
+
+WORKDIR /app
+
+# EasyOCR(opencv) 런타임에 필요한 시스템 라이브러리
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY . .
+
+EXPOSE 8000
+
+# Render는 컨테이너에 PORT 환경변수를 주입하고 그 포트로 리스닝하는 것을 기대합니다.
+# exec form은 환경변수를 확장하지 않으므로 셸을 경유해 CMD를 실행합니다.
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
