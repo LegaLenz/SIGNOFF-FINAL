@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: legalenz-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: PINECONE_API_KEY
+        sync: false
+      - key: PINECONE_INDEX_NAME
+        value: legalenz-index
+      - key: ALLOWED_ORIGINS
+        value: https://legalenz.onrender.com
+
+  - type: web
+    name: legalenz
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile.render
+    dockerContext: ./frontend
+    plan: free
+    envVars:
+      - key: VITE_API_URL
+        value: https://legalenz-api.onrender.com
