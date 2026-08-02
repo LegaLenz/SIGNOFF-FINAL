@@ -1,3 +1,5 @@
+<img src="./docs/logo.svg" alt="LegaLenz logo" width="80" />
+
 # LegaLenz
 
 > 계약서 속 독소 조항을 찾아내고, 대안 문구까지 제안하는 계약서·약관 자동 리스크 분석 AI 서비스
