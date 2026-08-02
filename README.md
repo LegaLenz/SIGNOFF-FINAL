@@ -1,10 +1,12 @@
+<img src="./docs/logo.svg" alt="LegaLenz logo" width="80" />
+
 # LegaLenz
 
 > 계약서 속 독소 조항을 찾아내고, 대안 문구까지 제안하는 계약서·약관 자동 리스크 분석 AI 서비스
 
 계약서를 PDF 또는 이미지로 업로드하면 조항 단위로 리스크 등급(High / Other)을 분류하고, 공정거래위원회 표준계약서를 근거로 대안 문구까지 자동 제안합니다.
 
-
+![데모](./docs/demo.gif)
 
 [발표자료 보기](./docs/presentation.pdf)
 
